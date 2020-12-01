@@ -1,0 +1,316 @@
+Python fournit par défaut une implémentation des fonctions de hachage MD5, SHA-1,
+SHA-224, SHA-256, SHA-384 et SHA-512. Ceci est très pratique.
+
+>>> from hashlib import sha256
+>>> x = sha256('UGLIX'.encode())
+>>> x.digest()
+b')\rm\x9b\xb6\xdd\xe4\xb8\r\tQZ\x90\xfd\xbd\x15Y\xad\x8b\xec;yfd\x11\x1f@\xa2N5"\xdb'
+>>> x.hexdigest()
+'290d6d9bb6dde4b80d09515a90fdbd1559ad8bec3b796664111f40a24e3522db'
+
+Attention, il faut fournir des bytes(), donc ne pas oublier d'encoder les str().
+Cf. /usr/share/doc/strings.txt pour plus de précisions.
+
+Il n'est pas obligatoire de fournir les données à hacher en une seule fois.
+>>> x = sha256('UGLIX rocks'.encode())
+>>> y = sha256()
+>>> y.update('UGLIX'.encode())
+>>> y.update(' rocks'.encode())
+>>> x.digest() == y.digest()
+True
+
+
+Les spécifications cryptographique indiquent parfois qu'il faut hacher la
+concaténation de plus données, par exemple avec des notations du type :
+
+    mac = H(Key || Message)
+
+Ceci peut simplement de faire comme ça :
+>>> x = sha256()
+>>> x.update(Key)
+>>> x.update(Message)
+>>> mac = x.hexdigest()
+
+
+CAS PARTICULIER DES ENTIERS
+---------------------------
+
+Dans UGLIX, les conventions suivantes ont été adoptées (après des décennies de
+debugging et d'incompatibilité dans les API).
+
+*) Si on doit hacher un entier, alors on le convertit en bytes() (en produisant
+   l'ordre "big-endian"), et on hache les bytes().
+
+*) Si on doit utiliser le haché comme un entier, alors on le converti en entier
+   selon l'ordre "big-endian".
+
+Se reporter à /doc/ints pour plus de détails.
+
+Exemple : On calcule H(1337 || 'UGLIX'), et on récupère le haché comme un entier
+
+>>> H = sha256()
+>>> Key = 1337
+>>> Message = 'UGLIX'
+
+>>> size = 1 + Key.bit_length() // 8
+>>> H.update(Key.to_bytes(size, byteorder='big'))
+>>> H.update(Message.encode())
+>>> int(H.hexdigest(), base=16)
+87368479139496548753041453892314973402075868428433709245093784034401128089181
+
+
+En python, les entiers (c.a.d. les objets de type int()) ne sont pas limités en
+taille. De manière interne, une librairie multiprécision est utilisée pour
+effectuer les calculs. Cette note détaille quelques opérations et conversions
+intéressantes.
+
+
+DIVISION
+--------
+
+En python 3.x, la division "/" renvoie toujours un float(), même si la division
+"tombe juste". Pour obtenir le quotient de la division euclidienne, utiliser
+l'opérateur "//" qui renvoie, lui, un entier.
+
+>>> 5 / 3
+1.6666666666666667
+>>> 5 // 3
+1
+>>> 8 / 2
+4.0
+>>> 8 // 2
+4
+
+Le reste de la division est obtenu avec "%".
+>>> 7 % 4
+3
+
+Notez que ceci renvoie toujours un nombre positif.
+>>> -5 % 11
+6
+
+Pour calculer le quotient et le reste à la fois, on peut utiliser divmod().
+Ça peut être programmé de manière plus efficace que les deux opération
+séparément.
+>>> divmod(1337, 42)
+(31, 35)
+>>> 13 * 42 + 35
+1337
+
+
+TAILLE DES ENTIERS
+------------------
+
+>>> i = 1337
+>>> i.bit_length()
+11
+
+
+CONVERSION int() <---> str()
+----------------------------
+
+Il est très facile de convertir des nombres vers des chaines de charactères.
+>>> x = 42
+>>> str(x)
+'42'
+
+Dans l'autre sens, ce n'est pas beaucoup plus compliqué.
+>>> y = "1337"
+>>> int(y)
+1337
+
+Des fonctions prédéfinies permettent de convertir un nombre en représentation
+binaire ou héxadécimale.
+>>> bin(x)
+'0b101010'
+>>> hex(x)
+'0x2a'
+
+Ces fonctions ajoutent un préfixe qui indique la base dans laquelle est exprimé
+le nombre qui suit (base 2 ou base 16). Parfois ce préfixe est embêtant. On peut
+toujours le retirer de la chaine de charactères obtenue, puisqu'il est toujours
+de taille 2. Cependant, dans le cas de l'hexadécimal, on a accès à d'autres
+options.
+
+En utilisant le formatage des chaines, on peut spécifier le nombre de chiffres,
+et se passer du préfixe.
+>>> '{0:08x}'.format(42)
+'0000002a'
+
+Ceci a l'inconvénient qu'i faut connaître à l'avance le nombre de chiffres du
+résulat --- dans le contecte de la cryptographie où les clefs et les données
+sont de tailles donnues ça pose rarement problème.
+
+Convertir une chaine de caractères contenant de l'hexadecimal en un entier est
+facile. Il suffit de spécifier la base. Le préfixe "0x" est optionnel, et la
+casse n'est pas prise en compte.
+
+>>> int('C01DC0FFE', base=16)
+>>> int('0xC01DC0FFE', base=16)
+>>> int('0xc01dc0ffe', base=16)
+51570806782
+
+
+CONVERSION int() <---> bytes(), méthode directe
+-----------------------------------------------
+
+En mémoire, un nombre est représenté par une séquence d'octets (comme toutes les
+autres données), et c'est parfois pratique de pouvoir y accéder.
+
+Plusieurs méthodes sont possibles. D'abord, Python fournit un accès direct (ne
+pas hésiter à consulter la doc).
+
+>>> x = int('0x1122334455667788', base=16)
+>>> x.to_bytes(length=8, byteorder='big')
+b'\x11"3DUfw\x88'
+>>> int.from_bytes(b'\x11"3DUfw\x88', byteorder='big')
+1234605616436508552
+>>> hex(1234605616436508552)
+'0x1122334455667788'
+
+Encore une fois, il faut être capable d'annoncer à l'avance la taille du
+résultat.
+
+
+CONVERSION int() <---> bytes(), méthode indirecte
+-------------------------------------------------
+
+Mais sinon, il y a un moyen, plus indirect, mais parfois utile. Les fonctions
+base64.b16encode et base64.b16decode convertissent des bytes() en hexadécimal.
+
+
+>>> import base64
+>>> base64.b16decode('DEADBEEF0000CAFECAFE')
+b'\xde\xad\xbe\xef\x00\x00\xca\xfe\xca\xfe'
+
+>>> base64.b16encode(b'\x11"3DUfw\x88')
+b'1122334455667788'
+
+Le décodage accepte indifférement des str() ou des bytes() en entrée, mais
+l'encodage produit des bytes(). Il faut fournir un nombre PAIR de signes en
+entrée. Attention, par défaut le décodage n'accepte pas les minuscules. Pour
+autoriser les minuscules, il faut rajouter un argument. Et attention, pas de
+préfixe "0x".
+
+>>> base64.b16decode('DeadBeef0000CafeCafe', casefold=True)
+
+Tout ceci permet des conversions int() --> hex --> bytes(). Pour reprendre ce
+qui était au-dessus :
+>>> i = int("0x1122334455667788", base=16)
+>>> h = "{0:016x}".format(i)
+>>> base64.b16decode(h)
+b'\x11"3DUfw\x88'
+
+Dans l'autre sens :
+>>> b = b'\x11"3DUfw\x88'
+>>> h = base64.b16encode(b)
+>>> int(h, base=16)
+1234605616436508552
+
+REMARQUE : ceci réalise la conversion avec l'ordre "big-endian".
+
+
+
+
+
+Une chaine de caractère est une séquence de caractères.  La façon dont
+ces caractères sont représentés par des séquences de bits est decrite
+par un système d'encodage.  Il en existe de nombreux, et ils sont bien
+sûr tous incompatibles entre eux.  Certains ne permettent pas de
+représenter tous les caractères.  Par exemple, l'encodage ISO-8859-1
+(a.k.a.  latin-1) code les caractères sur un octet.  Il est bien adapté
+au monde occidental, mais ne contient pas les signes asiatiques, par
+exemple.  Le KOI8-R, lui, permet de représenter les caractères
+cyrilliques, etc.
+
+Le système unicode, lui, permet de représenter la plupart des
+caractères connus, mais il n'est pas très compact (4 octets par
+caractères).  Représenter des chaines de caractères comme des séquences
+de caractères unicode offre l'avantage de faire disparaître tous ces
+ennuyeux problèmes d'encodage.  C'est le choix des concepteurs de
+Python.  Dans ce langage, une chaine de caractère (un objet de type
+"str") est représentée en mémoire dans le système unicode.
+
+Il existe aussi en python un autre type de chaine, les objets de type
+"bytes".  Il s'agit d'une simple séquence d'octets, comparable aux
+tableaux de type char qu'on a dans le langage C.
+
+>>> type("toto")
+<class 'str'>
+
+>>> type(bytes([0, 1, 2]))
+<class 'bytes'>
+
+
+Tout ceci a deux conséquences.
+
+A) Traitement du texte
+----------------------
+
+Les programmeurs doivent se soucier de ces problèmes d'encodage lorsqu'ils
+doivent transformer des chaines de caractères en séquences d'octets, par
+exemple pour les écrire dans un fichier, les envoyer sur le réseau, ou les
+transmettre à un autre programme (comme openssl...).  Par défaut dans python,
+les chaines unicodes sont encodées en UTF-8 lors de leur conversion en
+séquences d'octets, par exemple lors de leur envoi sur le réseau.
+
+En python, les chaines unicodes ont une méthode "encode", qui prend en
+argument un encodage (la valeur par défaut est "utf-8").
+
+>>> 'toto'.encode()
+b'toto'
+
+>>> 'aïlle'.encode()
+b'a\xc3\xaflle'
+
+Quand ils sont affichés, les objets de type byte sont préfixés par la
+lettre 'b'.  Ils possèdent, eux, ont une méthode "decode", qui prend
+aussi en argument un encodage (utf8 par défaut).
+
+>>> b'\xc3\xa0 V\xc3\xa4\xc3\xafn\xc3\xb6'.decode()
+'à Väïnö'
+
+Par exemple, une situation où l'encodage apparaît explicitement
+concerne l'utilisation de openssl.  Il est nécessaire d'encoder les
+chaines de caractères unicode avant de les envoyer à openssl, et
+il est nécessaire de les décoder en sortie de openssl (lors du
+déchiffrement) pour récupérer de l'unicode.
+
+B) Traitement des données binaires
+----------------------------------
+
+Il est parfois nécessaire d'envoyer ou de recevoir des requêtes
+contenant des données binaires, qui ne sont pas interprétables comme
+des chaines de caractères (il y a en effet des séquences d'octets qui
+sont des encodages invalides en UTF-8, et qui sont donc rejetées lors
+du décodage).  Par exemple :
+
+>>> s = bytes([5*i*i & 0xff for i in range(10)])
+>>> s.decode()
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xb4 in position 6: invalid start byte
+
+Du coup, ce genre de données ne peut pas être transmis à un émulateur de
+terminal, car le décodage serait problématique.  Pour contourner cette
+difficulté, il faut encoder les bytes() en quelque chose qui soit du texte
+acceptable, pour en faire une str().  Sur le campus, on utilise généralement à
+cette fin l'encodage en hexadecimal : les séquences d'octets sont découpées en
+paquets de 8 bits, et chaque paquet est converti en deux lettres.
+
+Pour ceci, on fait appel aux fonctions b16encode et b16decode du
+module base64.  Voici un exemple
+
+>>> import base64
+>>> base64.b16encode(s)
+b'0005142D507DB4F54095'
+
+
+Notez qu'on récupère des "bytes".  Mais ceux-là, on peut les convertir
+en texte sans douleur.
+
+>>> b'0005142D507DB4F54095'.decode()
+'0005142D507DB4F54095'
+
+
+Ceci est particulièrement utile à plusieurs reprises.  En particulier,
+dans openssl, les signatures sont du charabia binaire, et il faut les
+encoder/décoder de manière extérieure à openssl.

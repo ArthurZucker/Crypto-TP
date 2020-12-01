@@ -1,0 +1,69 @@
+Couloir 25-26/1er 				: un pied-de-biche.
+Couloir 26-00/2ème 				: friandise 
+Couloir 14-15/4ème				: PPTI key
+Couloir 14-15/4ème				: salle admin avec programmeur de carte + plan du réseau, écran lcd 
+
+Horloge : 2020-11-05 10:59:45
+
+Vous êtes dans la salle serveur de la PPTI...  ou plutôt, vous êtes devant
+le sas du couloir froid qui contient les racks de serveurs de la PPTI.
+Il y a un lecteur de badge à côté de la porte.  Au mur une affiche indique :
+
+RSA avec e = 3, si x^3 trop petit modulo intervient pas, la racine cubique
+peut êter proche d'une réelle. Méthode de Newton avec des divisions euclidienne 
+la signature, une seule partie doit être correcte 
+
+  +---------------------------------------------------------------------+
+  |          ACCÈS AUX SERVEURS :                                       |
+  |                                                                     |
+  |  Votre badge de service doit contenir une signature qui prouve vos  |
+  |  droit d'accès.  Elle doit avoir l'ID ``ppti_server_room''.         |
+  |                                                                     |
+  |  Il doit s'agir d'une signature de la chaine :                      |
+  |          "PPTI SERVER ACCESS ON yyyy-mm-dd hh:mm UTC"               |
+  |  (en remplaçant yyyy par l'année, mm par le mois, dd par le jour    |
+  |   du mois, hh par l'heure et mm par les minutes).                   |
+  |                                                                     |
+  |  La signature doit vérifier correctement avec la clef de la PPTI.   |
+  |  Elle doit obéir à la norme RSA / PKCS#1 v1.5.                      |
+  |                                                                     |
+  |  Attention, la date doit être en temps universel (cf.  horloge).    |
+  |                                                                     |
+  |  *** Le responsable                                                 |
+  +---------------------------------------------------------------------+
+
+Ici se trouve une horloge murale.
+Ici se trouve un sas d'accès au couloir froid qui contient les serveurs.
+Ici se trouve un écran LCD.
+
+Couloir 24-25/2ème				    : Mémo + code local  + coffre + dowloader 
+Couloir 24-25/3ème,salle 307 	: outil de développement pour tags RFID (SESI)
+Rotonde 24/4ème étage			    : porte blindée 
+
++--------------------------------------------------------------------------------+
+|  Ce coffre-fort Kryptonite Mk IV met en oeuvre les mesures de sécurité         |
+|  les plus modernes :                                                           |
+|  - Blindage en plomb anti rayon-X autour des circuits intégrés                 |
+|  - Plaques de Cobalt-Vanadium-Tungstène anti-perceuse devant la serrure        |
+|  - Relockers en verre (se brisent et bloquent tout en cas de perforation)      |
+|  - Relockers en cire (fondent et bloquent tout en cas d'attaque thermique)     |
+|  - Lasers*, chocs électriques*, gaz toxique**, etc. anti-gangsters             |
+|                                                                                |
+|   * fonctionnent avec de l'énergie renouvelable                                |
+|  ** presque entièrement biodégradable (les composants polluants sont absorbés  |
+|     définitivement par l'adversaire)                                           |
++--------------------------------------------------------------------------------+
+
+
+
+
+Given value does not have the right size (32 + 256 bits)
+Rotonde 26/3ème 				: serrure électronique sur la porte du couloir 26-00/3ème (Crypto BAKA-Lock++) à faire 
+chiffré = 
+125da8e9e3ab23b877d95e4bc6745c1106a0a817c0eddf36c078f279199d8cb2
+3ab3273b93ee3678f8e023eb3f91d81ed4ec3c949938f8628825336f462b96b3
+a086e910e3ec1ce06ab8c309f9d97eba2bd040ca12fd7d54d9c109eb5d3665fd
+98bbe679ca45b3c2bc8bec99888e34e059adba12596a61655b0950ff33bbfe9e
+
+
+prendre carte micro-SD dowloader  chargeur universel

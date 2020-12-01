@@ -1,0 +1,56 @@
+1) PRINCIPES GÉNÉRAUX DE FONCTIONNEMENT
+   [...vous sautez ce chapitre...]
+
+2) DESCRIPTION MÉCANIQUE DU MONNAYEUR
+   [...vous sautez aussi ce chapitre...]
+
+3) SCHÉMA ELECTRIQUE GÉNÉRAL
+   [...vous sautez environ 700 pages...]
+
+957) PRINCIPE DU CONTRÔLE D'ACCÈS À L'INTERFACE D'ADMINISTRATION
+   Il suffit de demander le produit "ADMIN" lors du menu de sélection.
+   Ensuite, l'accès à l'interface d'administration du distributeur repose sur
+   un mécanisme d'authentification cryptographique à l'état de l'art. Chaque
+   opérateur possède non pas UNE, mais DEUX clefs secrètes d'authentification
+   Il doit entrer les deux pour s'authentifier, ce qui est deux fois plus sûr.
+   Un mécanisme non-spécifié vérifie l'authenticité des clefs saisies, ainsi
+   que l'autorisation de l'opérateur, puis lui donne accès à l'interface.
+
+   NOTE #1 : les clefs doivent être données en hexadécimal.
+
+   NOTE #2 : les clefs commencent par le nom de l'opérateur à qui elles
+             appartiennent.
+
+958) SÉCURITÉ DU CONTRÔLE D'ACCÈS À L'INTERFACE D'ADMINISTRATION
+   Le service juridique de la société a insisté pour qu'au lieu de l'AES,
+   un autre mécanisme cryptographique plus éprouvé soit utilisé. Le service
+   commercial s'oppose à ce que son nom soit rendu public. Néanmons, nos
+   consommateurs peuvent être rassurés : il était parfaitement sûr à l'époque
+   où il a été conçu !
+   Le mécanisme précis de vérification de la validité des données d'authen-
+   tification saisies par l'opérateur ne peut pas être révélé pour des raisons
+   de "droit d'auteur".
+
+959) ERRATA ET RESPONSIBLE DISCLOSURE
+   Une publication anonyme sur un forum de h4x0rz affirme que le mécanisme
+   d'authentification n'est pas sûr. Selon cette publication, il suffirait
+   que les deux clefs soient différentes et que leurs empreintes par la
+   fonction SHA-256 coincident partiellement (*). La société nie ces
+   affirmations sans fondement. Par ailleurs, elle prie tous ses clients
+   d'installer ***LE PLUS RAPIDEMENT POSSIBLE*** un correctif logiciel
+   (publié peu après cette annonce) qui améliore sensiblement l'expérience
+   des consommateurs.
+
+ (*) l'allégation mensongère de ces criminels en-ligne consiste à dire que
+     l'accès est accordé frauduleusement si les 56 bits de poids faible
+     des empreintes par SHA-256 des deux clef sont les mêmes.
+     Pour que tout soit bien clair, dans l'esprit de ces escrocs, les deux
+     chaines de caractères
+     - "tests burnt alarm title"
+     - "scent hated peace world"
+     ont pour empreintes :
+     - ec58d880e8b8d490186a8c413c94d9d993d2cff4fe3b0011cc5955aff3156b2a
+     - ec58d88092c8be5b0a7093cd51220ff5496d4868afac13eca8a09bc8b749fcc6
+     donc leurs empreintes coincident sur les 32 premiers bits.
+
+On rappelle que sur la machine, les clefs doivent être données en hexa.

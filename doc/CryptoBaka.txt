@@ -1,0 +1,59 @@
+Les serrures BAKA de haute sécurité fonctionnent de la façon suivante.
+
+*) Les "clefs" (nommés "Objects Uniques d'Identification" ---OUI--- dans
+   cette documentation) sont des dispositifs radio qui communiquent avec la
+   serrure (quand elles en sont suffisament proches) via la norme NFC,
+   qui est un standard industriel utilisé par presque tous les tags RFID.
+*) Tout le système possède une paire de clefs RSA.
+*) Chaque OUI contient un numéro de série codé sur 32 bits, ainsi que la clef
+   secrète dans une puce équipée de contre-mesures matérielles qui visent à
+   en empêcher l'extraction.
+*) Les "serrures" (nommées "Mécanismes d'Ouverture Universels à Authentification
+   Interactive Sécurisée" ---MOUAIS--- dans cette documentation) contiennent la
+   clef publique et sont reliés à un serveur de permission.
+*) Lorsqu'un OUI est mis en contact avec un MOUAIS, le MOUAIS génère une
+   chaine K de 48 bits aléatoire, puis la chiffre avec la clef publique et
+   la transmet au OUI.
+*) Le OUI effectue le déchiffrement RSA, récupère K, puis renvoie la paire
+   (numéro de série, HMAC(K, numéro de série)) au MOUAIS.
+*) Le MOUAIS vérifie si MAC est correct. Le cas échéant, il interroge le
+   serveur de permission pour déterminer si le OUI qui porte ce numéro de
+   série est autorisé à ouvrir la porte. Dans le cas contraire, il répond...
+   NON (sinon, la porte s'ouvre).
+
+La clef publique du système est :
+
+    e = 0x10001
+    N = 0x1ea982ba8f01d5e03163b0409a554484b8e145af768a8d3e66b84c9723d8604a
+          33bd7c52033def81adfaf49beaa4f0f2b3b92370efb88f07665c5c35afdfd947
+          52eacc4cf24ff3b96954ff391abaf39108df0cf11c26567ac2aa408143038ed1
+          1d53172667b95637a7cd3d6bc8972e6a4d7a503730db2af935d3baf8d5a5465d
+
+Le chiffrement s'effectue par la méthode RSA directe ("textbook"), sans
+bourrage, en représentant le message à chiffrer comme un entier m puis en
+calculant m**e % N. Vu que les messages chiffrés sont de PETITS entiers, le
+système évite une faille grossière en utilisant e=65537 (en effet, avec e=3
+le chiffrement serait très facile à défaire vu que le modulo ne jouerait
+aucun role).
+
+Voici un exemple d'authentification réussie pour le OUI portant le numéro
+0 (il a toujours le droit d'ouvrir toutes les portes).
+
+Le MOUAIS choisit K = 0x554433221100.
+
+MOUAIS >>> OUI :
+
+      1ade43cb907946668eaddbbafc6cde1a0d7b651526c235041334fd9dee126afa
+      374a13aa53f97bb1d57cdff96d20c6588f439f4397d208e3ed73c205aa29a830
+      228c5965bfda8d122bd9e9c46abb9a98ae07bb8bfee66a25806df6756ba55871
+      9ab158202751a4b11694029939558f065c4481607e89138cc9e595937a999675
+
+OUI >>> MOUAIS :
+
+      00000000a90710ec6f1fea02e57ded332134305a777a93f43f34a7583a615ef0dda73094
+      ^^^^^^^^||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+       serial        HMAC-SHA256(0x554433221100, 0x00000000)
+
+MOUAIS >>> OUI :
+
+      OK

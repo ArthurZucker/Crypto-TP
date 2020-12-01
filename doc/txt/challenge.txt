@@ -1,0 +1,534 @@
+GUIDE STRATÉGIQUE POUR LA RÉALISATION DE CLIENTS MUSSH
+======================================================
+
+Le comité technique HUSH de l'University Engineering Task Force (UETF) recommande
+que les implémenteurs de clients MUSSH suivent l'une des des trois stratégies
+suivantes.
+
+
+STRATÉGIE N°1 : RÉALISER UN PROXY
+---------------------------------
+    Il s'agit d'écrire un programme qui implémente le côté "client" de la couche
+    de chiffrement authentifié. Ce programme échange localement des octets avec
+    la couche TELNET (amont) d'une part; il échange des octets sur le réseau
+    avec le côté "serveur" de la couche de chiffrement authentifié d'autre part.
+
+    Pour ce faire :
+    0. L'utilisateur lance le proxy sur la machine cliente.
+    1. Le proxy ouvre un port TCP (disons le port 4242) sur la machine cliente.
+    2. Le proxy se connecte au serveur de l'université sur le port TCP 6025.
+    3. L'utilisateur dirige son client telnet sur le port 4242 de la machine
+       locale.
+    4. Le proxy effectue l'échange de clef, le chiffrement / déchiffrement, de
+       manière transparente pour la couche TELNET en amont.
+
+
+        Avantage : le proxy peut être réalisé dans n'importe quel langage, avec
+                   n'importe quelle librairie externe. N'importe quel client
+                   TELNET peut être utilisé.
+    Inconvénient : mise en oeuvre un peu plus lourde côté utilisateur.
+
+    Un proxy open-source en python est disponible dans les bonnes bibliothèques.
+
+
+STRATÉGIE N°2 : ÉCRIRE SON PROPRE CLIENT "FROM SCRATCH"
+-------------------------------------------------------
+    Il s'agit d'implémenter complètement un client pour le protocole TELNET, ainsi
+    que la couche de chiffrement authentifié dans le client "officiel".
+
+        Avantage : simple à utiliser pour l'utilisateur. Flexibilité maximale.
+    Inconvénient : mise en oeuvre lourde. Il faut comprendre le protocole TELNET.
+
+
+STRATÉGIE N°3 : MODIFIER UN CLIENT OPEN-SOURCE
+----------------------------------------------
+    Il s'agit d'implémenter directement la couche de chiffrement authentifié
+    dans le client "officiel". Pour cela, un guide à part est fourni.
+
+
+        Avantage : plus simple pour l'utilisateur final.
+    Inconvénient : flexibilité moindre ; il faut comprendre le fonctionnement du
+                   client open-source programmer en python, et utiliser la
+                   librairie twisted.
+
+
+CONSEILS POUR LA MISE AU POINT
+------------------------------
+    La réalisation directe d'un client MUSSH est un exercice de programmation
+    non-trivial. Pour facilier la mise au point, deux protocoles intermédiaires
+    sont implémentés par le serveur de l'université. Leur utilisation dans la vie
+    de tous les jours n'est PAS recommandée, car ils n'offrent pas la même
+    sécurité que le protocole MUSSH.
+
+
+PROTOCOLE "TELNET OVER NETSTRINGS"
+----------------------------------
+    La réalisation d'un client pour ce protocole garantit la réalisation
+    correcte de la couche "NETSTRINGS".  Il s'agit d'intercaler un "emballage" en
+    netstrings entre le client et le serveur telnet.  Aucun chiffrement n'est
+    réalisé.  Ce protocole est disponible sur le port 6023 du serveur de
+    l'université.
+
+                                                               ┌──────────┐
+                                                               │ Terminal │
+                                                               └─────┬────┘
+      Couche TELNET                                                  │
+    ╔════════════════════════════════════════════════════════════════╪═════════╗
+    ║                                                                │         ║
+    ║                                                        ┌───────┴───────┐ ║
+    ║                                                        │ client telnet │ ║
+    ║                                                        └───────┬───────┘ ║
+    ║    Couche NETSTRINGS                                           │         ║
+    ║ ╔══════════════════════════════════════════════════════════════╪═══════╗ ║
+    ║ ║                                                              │       ║ ║
+    ║ ║                                                              │       ║ ║
+    ║ ║ ┌───────────┐                                          ┌─────┴─────┐ ║ ║
+    ║ ║ │ Netstring ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤ Netstring │ ║ ║
+    ║ ║ └─────┬─────┘                                          └───────────┘ ║ ║
+    ║ ║       │                                                              ║ ║
+    ║ ║       │                                                              ║ ║
+    ║ ╚═══════╪══════════════════════════════════════════════════════════════╝ ║
+    ║         │                                                                ║
+    ║ ┌───────┴────────┐                                                       ║
+    ║ │ serveur telnet │                                                       ║
+    ║ └───────┬────────┘                                                       ║
+    ║         │                                                                ║
+    ╚═════════╪════════════════════════════════════════════════════════════════╝
+              │
+          ┌───┴───┐
+          │ Shell │
+          └───────┘
+
+
+PROTOCOLE "ENCRYPTED TELNET OVER NETSTRINGS"
+--------------------------------------------
+    La réalisation d'un client pour ce protocole garantit la réalisation
+    correcte de la couche de chiffrement authentifié. Il s'agit du protocole
+    MUSSH, sauf que l'échange de clef Diffie-Hellman n'est pas effectué. À la
+    place les six clefs symétriques du protocole de chiffrement authentifié sont
+    chacune formées de seize octets zéro. Ce protocole est disponible sur le
+    port 6024 du serveur de l'université.
+
+
+
+    PROTOCOLE mussh (mINIMALIST uNIVERSITY sECURE shELL)
+    ====================================================
+
+    Le protocole TELNET transmet les données en clair, ce qui pose évidemment des
+    problèmes de sécurité.  Pour y répondre, un protocole nommé MUSSH (Minimalist
+    University Secure SHell) a été mis au point.  Ce protocole permet d'établir un
+    tunnel chiffré après avoir réalisé un échange de clef authentifié.  À l'intérieur
+    de ce tunnel, les transmissions obéissent au protocole telnet.
+
+    Ce protocole est disponible sur le port 6025 du serveur et son usage est
+    chaudement recommandé.  La plupart des terminaux certifiés compatibles
+    contiennent un client MUSSH. Vérifiez la compatibilité de votre matériel.
+
+    Malheureusement, les clients telnet usuels (y compris la version libre en python
+    disponible dans toutes les bonnes bibliothèques) ne gèrent pas nativement le
+    protocole MUSSH.  Il est par conséquent recommandé consulter le "hacker's guide"
+    avant de tenter de réaliser soi-même son propre client.
+
+
+    À PROPOS DU PROTOCOLE TELNET
+    ----------------------------
+        Lorsqu'un utilisateurs ouvre une session sur une machine physique (par exemple
+        dans les salles de TME), il utilise un TERMINAL.  Un processus (typiquement
+        le shell) est lancé par le système d'exploitation pour satisfaire les besoins
+        de l'utilisateur.  Ce processus et le terminal échangent alors des octets.
+
+                                ┌───────┐    ┌──────────┐
+                                │ Shell ├────┤ Terminal │
+                                └───────┘    └──────────┘
+
+
+        Lorsqu'une session est établie à distance avec le protocole telnet, une
+        "couche TELNET" s'intercale entre le terminal et l'application.  Elle est
+        invisible pour les deux extrémités.
+
+
+                 Couche TELNET
+               ╔═════════════════════════════════════════════════════╗
+               ║                                                     ║
+    ┌───────┐  ║  ┌────────────────┐              ┌───────────────┐  ║  ┌──────────┐
+    │ Shell ├──╫──┤ serveur telnet ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤ client telnet ├──╫──┤ Terminal │
+    └───────┘  ║  └────────────────┘              └───────────────┘  ║  └──────────┘
+               ║                                                     ║
+               ╚═════════════════════════════════════════════════════╝
+
+
+        Nous n'allons pas rentrer ici dans les détails sordides du protocole telnet.
+        Il transmet essentiellement les octets directements, mais il faut
+        cependendant savoir que l'octet 0xFF a une signification particulière dans
+        ce protocole (il permet au client et au serveur de se transmettre des
+        commandes ou de négocier des options).
+
+        Tous les autres octets sont transmis tels quels.  Pour transmettre l'octet
+        0xFF lui-même, le protocole telnet procède à un "échappement" et envoie les
+        deux octets 0xFFFF.
+
+
+
+    STRUCTURE GÉNÉRALE DU PROTOCOLE MUSSH
+    -------------------------------------
+        Le protocole MUSSH intercale à son tour un tunnel chiffré entre le client et
+        le serveur telnet.  Cette "couche de chiffrement" est invisible pour la
+        couche telnet.  Pour des raisons de simplification technique, les données
+        échangées sur le réseau à l'intérieur du tunnel chiffré sont elles-mêmes
+        "emballées"  dans des NETSTRINGS.  Cet encodage est lui-aussi invisible pour
+        la couche de chiffrement.
+
+
+                                                                   ┌──────────┐
+                                                                   │ Terminal │
+                                                                   └─────┬────┘
+      Couche TELNET                                                      │
+    ╔════════════════════════════════════════════════════════════════════╪═════════╗
+    ║                                                                    │         ║
+    ║                                                            ┌───────┴───────┐ ║
+    ║                                                            │ client telnet │ ║
+    ║                                                            └───────┬───────┘ ║
+    ║    Couche CHIFFREMENT AUTHENTIFIÉ                                  │         ║
+    ║ ╔══════════════════════════════════════════════════════════════════╪═══════╗ ║
+    ║ ║                                                                  │       ║ ║
+    ║ ║                    Couche NETSTRING                              │       ║ ║
+    ║ ║                 ╔══════════════════════════════════════╗         │       ║ ║
+    ║ ║                 ║                                      ║         │       ║ ║
+    ║ ║ ┌────────────┐  ║  ┌───────────┐        ┌───────────┐  ║  ┌──────┴─────┐ ║ ║
+    ║ ║ │ Encryption ├──╫──┤ Netstring ├╌╌╌╌╌╌╌╌┤ Netstring ├──╫──┤ Encryption │ ║ ║
+    ║ ║ └─────┬──────┘  ║  └───────────┘        └───────────┘  ║  └────────────┘ ║ ║
+    ║ ║       │         ║                                      ║                 ║ ║
+    ║ ║       │         ╚══════════════════════════════════════╝                 ║ ║
+    ║ ║       │                                                                  ║ ║
+    ║ ║       │                                                                  ║ ║
+    ║ ╚═══════╪══════════════════════════════════════════════════════════════════╝ ║
+    ║         │                                                                    ║
+    ║ ┌───────┴────────┐                                                           ║
+    ║ │ serveur telnet │                                                           ║
+    ║ └───────┬────────┘                                                           ║
+    ║         │                                                                    ║
+    ╚═════════╪════════════════════════════════════════════════════════════════════╝
+              │
+          ┌───┴───┐
+          │ Shell │
+          └───────┘
+
+        Lorsqu'une couche reçoit des octets de la couche en amont, elle doit les
+        traiter puis les transmettre à la couche en aval.  Réciproquement, lorsqu'une
+        couche reçoit des octets de la couche en aval, elle doit les traiter et les
+        transmettre à la couche en amont.
+
+
+
+    SPÉCIFICATION DE LA COUCHE NETSTRINGS
+    -------------------------------------
+        Les "netstring" constituent un format de sérialisation très simple de
+        n'importe quel type de données. Sa spécification est accessible ici :
+
+            https://cr.yp.to/proto/netstrings.txt
+
+        Elle consiste à "emballer" les octets reçus en indiquant leur nombre.
+        Lorsqu'on reçoit une séquence d'octets <data> de la couche en amont, on
+        envoie à la couche en aval :
+
+            len(<data>):<data>,        (len(<data>) est envoyé en base 10, en ASCII)
+
+        Par exemple, si on reçoit "toto", on transmet "4:toto,".  De manière
+        équivalente si on reçoit "6:foobar," de la couche en aval, on remonte
+        "foobar" à la couche en amont.
+
+        Remarque : lorsque la couche NETSTRING du serveur reçoit une netstring mal
+                   formée, elle termine la connection.
+
+
+
+    SPÉCIFICATION DE LA COUCHE DE CHIFFREMENT AUTHENTIFIÉ
+    -----------------------------------------------------
+        Les données sont chiffrées avec l'AES en mode compteur (cf. spécification
+        ci-dessous), et authentifiées avec HMAC-SHA256.  Le client et le serveur
+        possèdent chacun trois clefs de 128 bits :
+
+        - Kaes : la clef de l'AES en mode compteur
+        - Kiv  : le vecteur d'initialisation du mode compteur
+        - Kmac : la clef de HMAC-SHA256 pour l'authentification
+
+        Si on reçoit la séquence d'octets <data> de la couche en amont, on calcule :
+
+                      <mask> <-- les <len(data>)> prochains octets du flux
+                                 pseudo-aléatoire généré par l'AES-128-CTR.
+
+            <encrypted data> <-- <data> XOR <mask>,
+                       <tag> <-- HMAC-SHA256(<Kmac>, <data>)
+        <authenticated data> <-- <encrypted data> || <tag>
+
+                                     (l'opérateur || désigne la concatenation)
+
+        En on envoie <authenticated data> à la couche en aval.
+
+        Lorsque la couche en aval remonte un message, il est nécessaire de vérifier
+        le <tag> avant de le remonter à la couche en amont.  Les messages dont le
+        <tag> est incorrect doivent être ignorés.
+
+
+
+    SPÉCIFICATION DE AES-128-CTR
+    ----------------------------
+        L'AES-128 en mode compteur génère un flux d'octets pseudo-aléatoire.  C'est
+        essentiellement l'algorithme suivant :
+
+            1. [initialisation.]   Poser CTR <-- Kiv.
+
+            2. [Nouveau bloc.]     Former un bloc P de 16 octets en représentant
+                                   l'entier CTR au format "big-endian".
+                                   Faire C <-- AES-128(Kaes, P) et i <-- 0.
+                                   Incrémenter CTR.
+
+            3. [Prochain octet.]   Si i == 16, retourner à l'étape 2.  Sinon, envoyer
+                                   C[i] comme prochain octet pseudo-aléatoire, puis
+                                   incrémenter i.  Re-effectuer l'étape 3.
+
+        Remarque : le canal de communication maintient donc un état, composé de CTR
+                   et de i.
+
+        Exemple : avec Kaes == Kiv == 0x00000000000000000000000000000000, les 32
+                  premiers octets du flux pseudo-aléatoire sont :
+
+                  66e94bd4ef8a2c3b884cfa59ca342b2e58e2fccefa7e3061367f1d57a4e7455a
+
+
+    PROTOCOLE D'ÉCHANGE DE CLEFS
+    ----------------------------
+        Pour faire fonctionner la couche de chiffrement authentifié, il  est
+        nécessaire que le client et le serveur partagent des clefs symétriques.  Ceci
+        se fait avec un échange de clef Diffie-Hellman authentifié par des
+        signatures.  Les utilisateurs qui veulent utiliser ce protocole doivent avoir
+        un compte avec une clef publique.
+
+        Les utilisateurs doivent posséder les "paramètres" ainsi que la clef publique
+        du serveur.  Les paramètres décrivent un groupe (un générateur <g> d'ordre
+        <q> modulo <p>).  Voici les données en question.
+
+        -----BEGIN X9.42 DH PARAMETERS-----
+        MIICLAKCAQEAh6jmHbS2Zjz/u9GcZRlZmYzu9ghmDdDyXSzu1ENeOwDgDfjx1hlX
+        1Pr330VhsqowFsPZETQJb6o79Cltgw6afCCeDGSXUXq9WoqdMGvPZ+2R+eZyW0dY
+        wCLgse9Cdb97bFv8EdRfkIi5QfVOseWbuLw5oL8SMH9cT9twxYGyP3a2Osrhyqa3
+        kC1SUmc1SIoO8TxtmlG/pKs62DR3llJNjvahZ7WkGCXZZ+FE5RQFZCUcysuD5rSG
+        9rPKP3lxUGAmwLhX9omWKFbe1AEKvQvmIcOjlgpU5xDDdfJjddcBQQOktUMwwZiv
+        EmEW0iduEXFfaTh3+tfvCcrbCUrpHhoVlwKCAQA/syybcxNNCy53UGZg7b1ITKex
+        jyHvIFQH9Hk6GguhJRDbwVB3vkY//0/tSqwLtVW+OmwbDGtHsbw3c79+jG9ikBIo
+        +MKMuxilWuMTQQAKZQGW+THHelfy3fRj5ensFEt3feYqqrioYorDdtKC1u04ZOZ5
+        gkKOvIMdFDSPby+Rk7UEWvJ2cWTh38lnwfs/LlWkvRv/6DucgNBSuYXRguoK2yo7
+        cxPT/hTISEseBSWIubfSu9LfAWGZ7NBuFVfNCRWzNTu7ZODsN3/QKDcN+StSx4kU
+        KM3GfrYYS1I9HbJGwy9jB4SQ8A741kfRSNR5VFFeIyfP75jFgmZLTA9sxBZZAiEA
+        jPg2QqcJoJe0R5l2QBKdopmxpH0es3ULowiw/mT1+9M=
+        -----END X9.42 DH PARAMETERS-----
+
+
+        -----BEGIN PUBLIC KEY-----
+        MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMM6kpDWtZnIQauXmCZdg90zLbQt/MLNU
+        3158zCQrRxs3MOZF+1nZN6MIM0sZvMs6z9lTbLoTZQyw4QFC6sv3Dg==
+        -----END PUBLIC KEY-----
+
+        Le protocole d'échange de clef se déclenche lorsque la couche "TELNET"
+        souhaite établir une connection.  Tous les messages sont échangés avec la
+        couche "NETSTRING".
+
+         1) Le client choisit un nombre aléatoire <x> modulo <q> et calcule
+
+                A <-- g**x mod p
+                                 (l'opérateur ** désigne l'élévation à la puissance)
+
+            Il réalise une signature numérique, avec sa clef secrète, de la chaine
+            de charactères qui représente A en décimal.
+
+            Il transmet un dictionaire sérialisé en JSON contenant les champs
+            "username" (de type str), "A" (de type int) et "signature" (de  type
+            str, encodé en hexadécimal).
+
+         2) Le serveur vérifie la signature et abandonne la connection si elle est
+            incorrecte, puis il choisit un nombre aléatoire <y> modulo <q>.
+            Il calcule :
+
+                B <-- g**y mod p,
+                K <-- A**y mod p.
+
+            Le serveur forme ensuite la chaine de charactères :
+
+                S <-- "<A>,<B>,<username>"
+
+            (en remplaçant les symboles entre chevrons par leurs valeurs
+            respectives, avec les nombres écrits en décimal).  Le serveur réalise une
+            signature numérique de la chaine S avec sa clef secrète.  Il renvoie
+            enfin un dictionnaire sérialisé en JSON contenant les champs "B" (int),
+            et "signature" (str, encodé en hexadécimal).
+
+         3) Le client doit vérifier la signature (grace à la clef publique du
+            serveur) et abandonner la procédure si elle est incorrecte.  Il calcule:
+
+                K <-- B**x mod p.
+
+         4) À ce stade, les deux parties posèdent K et peuvent en déduire leurs
+            clefs de session.
+
+            Pour le serveur (chiffrement des données émises) :
+
+                - Kaes <-- SHA256(<K> || 'A')
+                - Kiv  <-- SHA256(<K> || 'B')
+                - Kmac <-- SHA256(<K> || 'C')
+
+            Pour le client (chiffrement des données émises) :
+
+                - Kaes <-- SHA256(<K> || 'D')
+                - Kiv  <-- SHA256(<K> || 'E')
+                - Kmac <-- SHA256(<K> || 'F')
+
+                (<K> désigne la chaine de charactères qui représente K en base 10).
+
+            À chaque fois, seuls les 16 premiers octets du hashé sont retenus.  À
+            partir de là, tous les échanges sont chiffrés et authentifiés.  La couche
+            TELNET est informée que la connection est établie et l'utilisateur est
+            connecté.
+
+
+
+
+
+            GUIDE POUR HACKER LE CLIENT PYTHON OPEN-SOURCE
+            ==============================================
+
+            Le client python open-source disponible dans toutes les bonnes bibliothèques
+            repose sur le paquet twisted. Twisted contient déjà du  code qui gère le
+            protocole telnet ainsi que les netstrings (bien), mais ce code nécessite une
+            petite... prise en main (moins bien).
+
+            Twisted distingue deux types d'objets :
+                - les Protocoles
+                - les Transports
+
+            Un protocole réagit à des évènements qui viennent de l'extérieur : établissement
+             d'une connection, réception de données, perte de la connection.
+
+            Un transport sert à... envoyer des octets vers le monde extérieur.
+
+            Cette dichotomie permet au même protocole de fonctionner avec des transports
+            différents, et au même transport de servir à des protocoles différents.
+
+
+                        ┌─────────────────────┐
+                        ▼                     │
+                  ┌───────────┐         ┌─────┴─────┐             ┌─────────────────┐
+                  │ Protocole │         │ Transport │◄-----------▶│ monde extérieur │
+                  └─────┬─────┘         └───────────┘             └─────────────────┘
+                        │                     ▲
+                        └─────────────────────┘
+
+
+            On peut consulter la documentation officielle qui décrit les interfaces de ces
+            deux composants :
+
+            https://twistedmatrix.com/documents/current/api/twisted.internet.interfaces.IProtocol.html
+            https://twistedmatrix.com/documents/current/api/twisted.internet.interfaces.ITransport.html
+
+
+            Voici un exemple minimal de protocole :
+
+            =================================BEGIN EXAMPLE==================================
+            from twisted.internet import protocol
+
+            class SampleProtocol(protocol.Protocol):
+                def dataReceived(self, data):
+                    """
+                    Invoqué lorsque les données <data> arrivent depuis le transport.
+                    """
+                    pass
+
+                def connectionMade(self):
+                    """
+                    Invoqué lorsque la connection est établie.  Un transport est disponible
+                    dans self.transport.  On peut envoyer des octets avec
+                    self.transport.write().
+                    """
+                    pass
+
+                def connectionLost(self, reason):
+                    """
+                    Invoqué lorsque la connection est terminée.
+                    """
+                    pass
+            ==================================END EXAMPLE===================================
+
+
+            Le client open-source python fonctionne de cette façon-là.  La méthode
+            connectionMade() de sa classe TelnetClient lance une négociation d'options
+            telnet avec le serveur.  Sa méthode dataReceived() affiche à l'écran les
+            données reçues.  Pour envoyer les charactères saisis au serveur, il utilise la
+            méthode write() du transport.
+
+            Mais en fait, il y a une petite subtilité.
+
+            Si on observe attentivement la ClientFactory, on voit que le protocole lancé
+            est... un TelnetTransport (!).  En fait, ceci utilise une technique qui vaut le
+            coup d'être comprise : le TelnetTransport est À LA FOIS un protocole et un
+            transport.  Il reçoit en argument un AUTRE protocole  (qu'on va dire "interne").
+
+
+                  ┌──────────────┐           ┌──────────────┐
+                  ▼              │           │              │
+            ┌───────────┐        │           ▼        ┌─────┴─────┐
+            │ Protocole │  ┌─────┴─────┬───────────┐  │ Transport │      ┌─────────────────┐
+            │           │  │ Transport ╎ Protocole │  │           │ <╌╌> │ monde extérieur │
+            │  interne  │  └───────────┴─────┬─────┘  │  externe  │      └─────────────────┘
+            └─────┬─────┘        ▲           │        └───────────┘
+                  │              │           │              ▲
+                  └──────────────┘           └──────────────┘
+
+
+            Vis-à-vis du monde extérieur, il se comporte comme un protocole, auquel est
+            fourni un transport (qu'on va dire "externe", probablement un TCPTransport).
+            Mais les données reçues, après traitement, sont relayées au protocole interne.
+            Vis-à-vis du protocole interne, le TelnetTransport se comporte bien comme un
+            transport.  Lorsque le protocole interne veut émetre des données, il invoque la
+            méthode write() de son transport (qui est donc le TelnetTransport).  Ceci-ci
+            effectue un encodage, puis relaye les données au  transport externe.
+
+            Cette technique est utile, car elle permet de réaliser des "couches".  En gros,
+            elle sert à implémenter la couche TELNET décrite dans le document de
+            spécification.
+
+            Pour notre part, on peut se servir de cette même technique pour faire :
+                - un hybride protocole-transport qui réalise la couche "netstrings"
+                - un hybride protocole-transport qui réalise la couche "chiffrement"
+
+
+
+            APPLICATION : GESTION DE LA "COUCHE NETSTRINGS"
+            -----------------------------------------------
+                Cette section décrit comment modifier le client open-source pour qu'il gère
+                le protocole intermédiaire "TELNET OVER NETSTRING" (décrit dans le
+                "hacker's guide").
+
+                Twisted fournit un protocole tout fait pour recevoir et envoyer des
+                netstrings :
+
+                    https://twistedmatrix.com/documents/current/api/twisted.protocols.basic.NetstringReceiver.html
+
+                La logique qui est à l'oeuvre dans sa conception voudrait qu'on construise
+                une sous-classe de NetstringReceiver, en fournissant une méthode
+                stringReceived() qui sera invoquée chaque fois qu'une netstring est bien
+                reçue. Mais il faudrait alors envoyer les données au TelnetTransport, et
+                donc le plus simple c'est de faire un hybride protocole-transport qui gère
+                la "couche netstring".
+
+                Un tel code figure dans le fichier netstrings.py
+
+                Pour l'utiliser, il faut modifier un peu le client open-source.
+
+                ================================ BEGIN PATCH ===============================
+                + from netstrings import NetstringWrapperProtocol
+
+                - self.protocol = TelnetTransport(TelnetClient)
+                + self.protocol = NetstringWrapperProtocol(TelnetTransport, TelnetClient)
+
+                - reactor.connectTCP('crypta.fil.cool', 23, factory)
+                + reactor.connectTCP('crypta.fil.cool', 6023, factory)
+                ================================= END PATCH ================================

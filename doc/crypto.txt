@@ -1,0 +1,307 @@
+Cet ouvrage s'adresse aux étudiants de second cycle d'informatique ou de
+mathématiques ainsi qu'aux élèves en écoles d’ingénieurs.
+
+Le bagage informatique et mathématique requis pour aborder le livre est
+celui que l'on acquiert lors des deux premières années de licence ou en
+classes préparatoires scientifiques, augmenté de quelques notions de théorie
+des nombres de niveau 3e année.
+
+Il propose plus de 140 exercices et problèmes précédés de rappels de cours
+et entièrement corrigés.  Ces exercices et problèmes portent sur les outils
+mathématiques et algorithmiques utiles en cryptographie et sur les fonctions
+                           [--------REDACTED--------]
+le cadre de la cryptographie symétrique et asymétrique.
+
+Des compléments en ligne offrent une vingtaine d'exercices supplémentaires
+ainsi que des références utiles.
+
+Cette troisième édition compte une dizaine de nouveaux exercices sur les
+probabilités discrètes, sur les chiffrements de Hill et de Playfair, sur le
+nouveau standard SHA-3 beaucoup utilisé dans les blockchains.
+
+
+ALGORITHMES CRYPTOGRAPHIQUES DÉPLOYÉS SUR LE CAMPUS
+===================================================
+
+TLCG
+----
+
+Il s'agit d'un générateur pseudo-aléatoire qui produit une suite d'octets à
+partir d'une graine de 128 bits. Un flux pseudo-aléatoire de la même taille que
+le message clair est généré, puis il est XORé sur le clair.
+
+Le flux pseudo-aléatoire est produit octet-par-octet de la façon suivante.
+
+1. [Initialization] Faire x <--- graine (de 128 bits)
+
+2. [Sortie]         Émettre les 8 bits de poids fort de x, c'est-à-dire l'octet
+                    représentant l'entier (x // 2**120), qui est compris entre
+                    0 et 255.
+
+3. [Mise à jour]    Faire x <--- (x * 47026247687942121848144207491837523525)
+                                 modulo 2**128.
+
+
+TarMAC
+------
+
+TarMAC est un code d'authentification de message (MAC) qui implante le
+paradigme "hash-then-encrypt". Il repose sur une fonction de hachage nommée
+SDBM (décrite ci-dessous) et sur l'AES.
+
+À partir d'un message M et d'une clef K, un "tag" d'authentification de 128 bits
+est produit de la façon suivante.
+
+1. Calculer H <--- SDBM(M).            # il s'agit d'une empreinte sur 128 bits.
+
+2. Calculer tag <--- AES(K, H).
+
+Pour vérifier si un tag est correct, il suffit de le recalculer à partir du
+message et de la clef, et de vérifier si c'est bien le même.
+
+
+SDBM
+----
+
+La fonction de hachage SDBM produit des empreintes de 128 bits. Elle fonctionne
+de la façon suivante :
+
+1. [initialisation] Poser hash <--- 0 et i <--- 0.
+
+2. [Fini ?]         Si i == |M|, renvoyer hash et s'arrêter.
+
+3. [Prochain octet] Calculer hash <--- (65599 * hash + M[i]) modulo 2**128.
+                    Incrémenter i puis retourner à l'étape 2.
+
+
+
+TESTS VECTORS
+=============
+
+Considérons le message :
+
+>>> plaintext = "Les sanglots longs\nDes violons\nDe l'automne\nBlessent mon coeur\nD'une langueur\nMonotone."
+
+Il s'agit d'un texte en ASCII, sans accents ni caractères bizarres.
+
+>>> plaintext.encode('ascii')
+b"Les sanglots longs\nDes violons\nDe l'automne\nBlessent mon coeur\nD'une langueur\nMonotone."
+
+
+TLCG
+----
+
+On chiffre le message avec TCLG, avec la clef :
+
+>>> K = 0x71d05909e13748ff733ffccfbfbf40eb
+
+Le tableau suivant déroule le processus de chiffrement :
+- X désigne les valeurs successives de l'état interne du PRNG.
+- Y désigne les sorties successives du PRNG.
+- P désigne les octets successifs du message clair.
+- P désigne les octets successifs du message chiffré.
+
++----------------------------------+----+----+----+
+|               X                  | Y  | P  | C  |
++----------------------------------+----+----+----+
+| 71d05909e13748ff733ffccfbfbf40eb | 71 | 4c | 3d |
+| ef39ad2f1d6315b0c62c6cc627325157 | ef | 65 | 8a |
+| 75f52a3e87e292c00674c6acc50d8673 | 75 | 73 | 06 |
+| 7b062bae4c94ae704899b120ac7bbeff | 7b | 20 | 5b |
+| 4f4a101c2099de29d5fe2e65fb1784bb | 4f | 73 | 3c |
+| aae960eb2b870197b645f0ff30e67867 | aa | 61 | cb |
+| ca5cf453bab39cf940950b7190e56dc3 | ca | 6e | a4 |
+| eb0ec19738c5bc8acc33ea0419b3f78f | eb | 67 | 8c |
+| 18af143b09b8243dcd568ad4f459238b | 18 | 6c | 74 |
+| aa0114f58817cfdc5831199b2bf22677 | aa | 6f | c5 |
+| 4899a3c77943c92af6b51d64190eb813 | 48 | 74 | 3c |
+| 38a6ae007cf3f627575aac8961fddf1f | 38 | 73 | 4b |
+| bd2f07ceba4db322f335722f6b88ed5b | bd | 20 | 9d |
+| 11ca3ff3dc709963c43b113239816b87 | 11 | 6c | 7d |
+| d497e4785db569c7f18ab47265c9b563 | d4 | 6f | bb |
+| d2e960b8b1053fa4d9650cb64b8f05af | d2 | 6e | bc |
+| a62cf825110739aee7624d9a0576b22b | a6 | 67 | c1 |
+| c085f11266ef33c9ad1a0cce37775797 | c0 | 73 | b3 |
+| b094e238fb8187f09f78af5e36a9b5b3 | b0 | 0a | ba |
+| d80e682b1aaab700a5a3aaeec7fbfb3f | d8 | 44 | 9c |
+| efab626aa4e90d7012e069fc618d41fb | ef | 65 | 8a |
+| 95546116ecfe18051217fa5b817dfaa7 | 95 | 73 | e6 |
+| a9f3e1c01da7a6ef81b33a666be50903 | a9 | 20 | 89 |
+| 1eb71b9978aab58c75ee869136c84fcf | 1e | 76 | 68 |
+| 13d8d969e53d4dd8f2a75ed56aa26ccb | 13 | 69 | 7a |
+| 5ec6db253a4713152637d34a991664b7 | 5e | 6f | 31 |
+| 3d7ab9df773d81dd2d2a4918b2a4ff53 | 3d | 6c | 51 |
+| 14cdc232ee19931747424eceb6f6935f | 14 | 6f | 7b |
+| 556bcacf55da5831cd0325a9b2c7029b | 55 | 6e | 3b |
+| a426c99b94ed6db7cdd75348c4a8a5c7 | a4 | 73 | d7 |
+| 9209089ebddaafe0e4deefadc455e8a3 | 92 | 0a | 98 |
+| 50bd35f0677615e7e2b5411f179855ef | 50 | 44 | 14 |
+| d482c2951dfc7dad98649b2daa16d36b | d4 | 65 | b1 |
+| 13e4c61925b4a884efef370cb593cdd7 | 13 | 20 | 33 |
+| cfd7fbcee7dc80bd31053c8588f714f3 | cf | 6c | a3 |
+| 9105da18b62e4cdaa00f186ef75e277f | 91 | 27 | b6 |
+| 06dc1174a26c866070c6dfc88088af3b | 06 | 61 | 67 |
+| 6456f77cbe8e97ca1cf0265b453dece7 | 64 | 75 | 11 |
+| 506e7e523d7bb29a58e371db6c6ad443 | 50 | 74 | 24 |
+| 87de700699efc61bc0579075a327980f | 87 | 6f | e8 |
+| d7f3a77794a39cdc50360c5782be660b | d7 | 6d | ba |
+| 8e262b80074fa5f090584d9f592412f7 | 8e | 6e | e0 |
+| 7bc47d74478a85f553ac0d9e36c67693 | 7b | 65 | 1e |
+| f1b52153410a49eb5abdfc7f4393379f | f1 | 0a | fb |
+| e50f5398f92bea546bc9dd34c1d4c7db | e5 | 42 | a7 |
+| 0aba7a1bc536e62f4963c5b6fdea5007 | 0a | 6c | 66 |
+| a64324376d929e6691495c79b7a24be3 | a6 | 65 | c3 |
+| 98351539b151b442e31e6766e98e962f | 98 | 73 | eb |
+| aa4ed1ff9f66b5de83910b6ed633a4ab | aa | 73 | d9 |
+| 93a447cb87e73271c0e5a2eec96bb417 | 93 | 65 | f6 |
+| fe88b32268db74c3e2be28939469a433 | fe | 6e | 90 |
+| faf4a1ed68315fe07dd2327b09e643bf | fa | 74 | 8e |
+| 45ff95298eec78ac2d8c95da8d5dcc7b | 45 | 20 | 65 |
+| 6de37032d9b12dd6e184558b93ca4f27 | 6d | 6d | 00 |
+| 663479016108594719207f3f89aacf83 | 66 | 6f | 09 |
+| fbc2e813f20365f386b75195f7d5d04f | fb | 6e | 95 |
+| 896523480fd212869643943252c10f4b | 89 | 20 | a9 |
+| f9fc66d5458953a8dcd275b9977f3137 | f9 | 63 | 9a |
+| e82e3c818ed9a832c6f7ee026f671dd3 | e8 | 6f | 87 |
+| 59faf2dfa80562d21b8cc2d2ee97cbdf | 59 | 65 | 3c |
+| a57a2eda2f760f96a82b80d223863d1b | a5 | 75 | d0 |
+| f7184e1ccd0feaf1ecb9b93f086a6a47 | f7 | 72 | 85 |
+| b595e81ae26e2946d28ea99e5062df23 | b5 | 0a | bf |
+| ae36e0a414cf0a81f2b4f6f739f5c66f | ae | 44 | ea |
+| fd68674a6f0437a38aa12cc9dd6125eb | fd | 27 | da |
+| f89c29d26f952a2f9de851e731e30a57 | f8 | 75 | 8d |
+| d66d2114b08534bc116ed494e4756373 | d6 | 6e | b8 |
+| 831a476e052a4da656ec5be60dd84fff | 83 | 65 | e6 |
+| 7641997a3bf1d363ce9998fab86099bb | 76 | 20 | 56 |
+| 39e059eb544c909be38307422bc72167 | 39 | 6c | 55 |
+| 58aa8bae24d59bb9fc9ae090bdd8fac3 | 58 | 61 | 39 |
+| dfeb9ae3f23ce3f43e4b7b449cd6f88f | df | 6e | b1 |
+| 981f098e5df4832c40ab50bfbbbe688b | 98 | 67 | ff |
+| c6c8b6680edb378260d2cc0c368bbf77 | c6 | 75 | b3 |
+| 926b0ce9ba49792080b37278797af513 | 92 | 65 | f7 |
+| 76d7f03d74b9bf9a073413d2fdc8501f | 76 | 75 | 03 |
+| 8117bc09127423a230fd0a3bfdaf625b | 81 | 72 | f3 |
+| 8cd114f49b01ae5c8fde2e56ce4cf487 | 8c | 0a | 86 |
+| f9c3c0dff3e9501b1cec3692424ba263 | f9 | 4d | b4 |
+| 73dd9315d6975b532a43baed7051e6af | 73 | 6f | 1c |
+| 4304c173cbbd45b9c5b578d47e33572b | 43 | 6e | 2d |
+| 588888e58f3b55af7f0fb86484ddd097 | 58 | 6f | 37 |
+| 8672161aa685e805bbd8f410f78e52b3 | 86 | 74 | f2 |
+| d46efcde8ce9790ea0e9fc2890784c3f | d4 | 6f | bb |
+| 3511930c0a495925ac9172966ce516fb | 35 | 6e | 5b |
+| 50472856db295080beba1e0fb2d863a7 | 50 | 65 | 35 |
+| 326713a5b863785ecbbc80a746295603 | 32 | 2e | 1c |
++----------------------------------+----+----+----+
+
+Le message chiffré est donc :
+
+3d8a065b3ccba48c74c53c4b9d7dbbbcc1b3ba9c8ae689687a31517b3bd79814b133a3b6671124e8
+bae01efba766c3ebd9f6908e65000995a99a873cd085bfeada8db8e6565539b1ffb3f703f386b41c
+2d37f2bb5b351c
+
+
+
+
+SDBM
+----
+
+On hache le message avec SDBM.
+
+Le tableau suivant déroule le processus de chiffrement :
+- X désigne les valeurs successives de l'état interne de la fonction de hachage ;
+  il vaut initialement zéro.
+- P désigne les octets successifs du message.
+
++----------------------------------+----+
+|                 X                | P  |
++----------------------------------+----+
+| 0000000000000000000000000000004c | 4c |
+| 000000000000000000000000004c1319 | 65 |
+| 00000000000000000000004c25d1b39a | 73 |
+| 0000000000000000004c388f02353306 | 20 |
+| 000000000000004c4b50ed66be1d8eed | 73 |
+| 00000000004c5e1776512a6658332cb4 | 61 |
+| 0000004c70e29e17485fc762e14c00ba | 6e |
+| 004c83b265dc301a96f4f2a1726e2e2d | 67 |
+| 9686cec3414a6d8018e92829574a5d7f | 6c |
+| d9f023577ed10b6f498a3976d8cc02b0 | 6f |
+| c570315940e119ed527afd0b5ce4a9c4 | 74 |
+| c7f565d81152b3e2494fa2b08609c7af | 73 |
+| 9b3c217ef73c8dffad498f7ac4172431 | 20 |
+| 554b357b65e69f353495134d65e2e87b | 6c |
+| 32fd8f44b2f662ad03fd25eefb5236b4 | 6f |
+| 1baaf4de6d4f4c91213b51220fef76ba | 6e |
+| c3f0b00c3314f8f27ebb075162a8382d | 67 |
+| e84786158b1bc26837582faf7f92d386 | 73 |
+| afaf8a68fe3d0efdce633bc338a80e04 | 0a |
+| c69c0e13a0047ed9062eedb2ff5f7340 | 44 |
+| ee7b16d8dff43d97733f7e6c4bbd5d25 | 65 |
+| c7237f535ab29b84db0c686400beec8e | 73 |
+| 810fb035ed7920be5071b15b1b8a3712 | 20 |
+| 73124abe918d5f477d55c0f5fe158de4 | 76 |
+| 9c3ef6733111efed99107a9f1531eb85 | 69 |
+| 69f1d76b0357a48925ad425822cdf62a | 6f |
+| e9ef06ad771aa36d87fb767e86d994c2 | 6c |
+| 98801bcaf2fbbfefed60affcc44d9c2d | 6f |
+| a351c9ed8be4296c1ac81381eb466f81 | 6e |
+| fb0e3d5996924c62aabeb83f55d67132 | 73 |
+| 05daaf9e5a637706bd2ead6c90f7db58 | 0a |
+| 206f925bb58107d73be93eaf8856faec | 44 |
+| 8dd0ba12b29829e0fd15f5898853c079 | 65 |
+| a0707d321d534b743df0f52c4d155de7 | 20 |
+| f8e0eca882f3cf8c3378a2fc56291c45 | 6c |
+| 2c02c06c098c46f94dac72425062f522 | 27 |
+| 95196422a07ec5068fb26eb4bd7c53bf | 61 |
+| 1562450444390c4fcb9dfbf6f5579c76 | 75 |
+| 88334045d659d34117d7f71dfd05817e | 74 |
+| c4e2a789935c14dcd543cd66c5d8de71 | 6f |
+| 1b50ce375885f79c491652238ecfbe3c | 6d |
+| 871a1824c094388c4ea1c58fe35bd132 | 6e |
+| 5790b19f9d0639291f5f81c4c4ca7bb3 | 65 |
+| 3e3b534dddb1307e3a45b436e9877117 | 0a |
+| a3e75ddabf1929560b5e430ae96bd4eb | 42 |
+| b3cad7ee3087378b0f3d691b46746641 | 6c |
+| 16d9542528d1ba762938242abce62a64 | 65 |
+| f3a0ddf6c6130c4c48fba36aa7086f0f | 73 |
+| d28d65cdcafc4fc19957de478a225524 | 73 |
+| 3699d8a143d939fc9ae73dbd5396f441 | 65 |
+| 487d9388ec71e0115ca5852e86671c6d | 6e |
+| 6a703b24101780eb51ea4cda2fccff47 | 74 |
+| 6cc29df776b40bd37583197ec2b9d299 | 20 |
+| 61dc569a42225e8d04c208ebbe53d414 | 6d |
+| 6bd39218a502497634abf057aab5315b | 6f |
+| 1b299912e50648c2e6a7d04833f225d3 | 6e |
+| 484f90aca54ece9e939475b6ee6a4f0d | 20 |
+| 5c413fcb7d036c9ac73fe66efb367496 | 63 |
+| f3da301730728156ef28b08646fcb159 | 6f |
+| 32c906276d84c38d8b89b8082988a54c | 65 |
+| 859ff138b739ab5f0eec738addecae29 | 75 |
+| d395142ec2903b511fbb4d194b67dc89 | 72 |
+| 25deba121ccfb8b21c3144a16b1845c1 | 0a |
+| 0be1e744cfd0900634c14ed1a0ba2ac3 | 44 |
+| d3dcb9bfb459a6484a640650b8938624 | 27 |
+| dd116a870858362e54ee4670f2720351 | 75 |
+| d1d03f9343e3aa552d14483dad5fd15d | 6e |
+| e1d2e9215f5c180a603b748d7bf18648 | 65 |
+| 7c08be928fb44ac9232f2ac306b80bd8 | 20 |
+| 44b975c5a8278aaed35e8cb6b322ea94 | 6c |
+| 5f69a3cbec69f46490fb5419002bbacd | 61 |
+| 1ecb3b992277b5bb01f2b252c58ff8e1 | 6e |
+| cf9ccd273130baf82d0ca7ee974f3fc6 | 67 |
+| e4bdadd5d5f6301fbe0beb067c46b22f | 75 |
+| f8839d95d7b595dbaff552df4794d9f6 | 65 |
+| c5f99f95ab8b9105a03eac877797a3ff | 75 |
+| 5803f160c85e50a11bf3ecee12505c33 | 72 |
+| 9a592f2f9fd6f399cdf560e6ddf9b097 | 0a |
+| 2b223c8f497fc0cf1049b6ca51097576 | 4d |
+| d9fc30c2d73f833eb8ee4cd366c9e879 | 6f |
+| d5d2d7327be0055dcf784ed034293635 | 6e |
+| 7615714c817f218e5d6b99660c59577a | 6f |
+| 80936352ffd79f7496e0cc766176877a | 74 |
+| 079871449584d491edc8b29883a55775 | 6f |
+| 4fc87565a0423db236fc772dbd258639 | 6e |
+| 17ba8444adff65d7ff4f11671275086c | 65 |
+| 5b2b3ae637b20f76e5dc5ad2933912c2 | 2e |
++----------------------------------+----+
+
+L'empreinte du message est donc : 5b2b3ae637b20f76e5dc5ad2933912c2.

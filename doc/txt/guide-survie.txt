@@ -1,0 +1,87 @@
+INTRODUCTION
+============
+
+Si on ne se plaît pas dans la pièce courante, on peut simplement essayer
+d'en SORTIR, ou bien consulter l'AIDE.
+
+
+GÉNÉRATION D'UNE PAIRE DE CLEFS
+===============================
+Openssl permet de générer des paires de clefs, avec la commande :
+
+    openssl genpkey <options>
+
+Encore une fois, vous êtes encouragés à consulter "man genpkey" et la
+documentation de openssl.  Par défaut, le résultat est envoyé sur la sortie
+standard.  Le résultat contient la paire de clefs, au format PEM (c'est de
+l'ASCII) propre à openssl et un peu pénible à décoder à la main.
+
+Par exemple, pour générer une paire de clefs RSA de 1024 bits :
+
+    openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:1024
+
+
+Une commande permet d'extraire la clef publique uniquement, par exemple pour
+la communiquer à des tiers :
+
+    openssl pkey -in <fichier contenant la clef secrète> -pubout
+
+Cf. "man pkey".
+
+
+SIGNATURES
+==========
+OpenSSL permet d'effectuer des signatures numériques et d'en vérifier avec
+plusieurs algorithmes, dont RSA.
+
+La solution la plus courante consiste à utiliser une fonction de hachage
+cryptographique, et à signer l'empreinte du document à authentifier.  OpenSSL
+peut accomplir ceci automatiquement avec la commande  "openssl dgst".  Vous êtes
+invités à consulter la page de manuel correspondante ("man dgst").  Par défaut,
+avec une clef RSA, cela produit des signatures PKCS#1 v1.5.  Si la clef est une
+courbe elliptique, alors c'est l'algorithme ECDSA qui est utilisé.
+
+Voici les exemples les plus pertinents :
+
+Production d'une signature
+--------------------------
+
+    openssl dgst -sha256 -sign secret_key.pem
+
+Ceci attend les données à signer sur l'entrée standard, et envoie la
+signature sur la sortie standard.  L'option -hex peut être utile.
+
+Vérification d'une signature
+----------------------------
+
+    openssl dgst -sha256 -verify public_key.pem -signature signature.bin
+
+Ceci attend sur l'entrée standard les données dont "signature.bin" contient
+une signature.
+
+Les signatures sont des données binaires, donc on doit généralement les encoder,
+par exemple en hexadecimal ou en base64 avant de pouvoir les transmettre sans
+douleur.  L'option -hex ne permet pas de vérifier des signatures données en
+hexadécimal.
+
+REMARQUE IMPORTANTE
+-------------------
+Une signature n'est valide que si les **mêmes** données (prétendument signées)
+sont fournies lors de la production et de la vérification de la signature.  Or,
+lorsque l'une des deux étapes sont effectuées par un serveur distant, on ne
+contrôle pas forcément les données en question.  Il faut savoir que la **majorité**
+des éditeurs de texte (vi, nano, gedit, kate, emacs, ...) ajoutent un caractère "\n"
+invisible à la fin de tous les fichiers.  Il est généralement impossible de
+l'empêcher, or ceci peut entrainer l'invalidité des signatures.  On peut vérifier
+si c'est le cas en faisant passer le fichier à travers le programme "xxd".  Si on
+voit apparaître un octet 0x0a à la fin, c'est le "\n" maudit.
+
+Une solution potentielle pour écrire un fichier sans caractère excédentaire
+consiste à utiliser un petit programme du type :
+>>> # cet exemple est en python
+>>> f = open(FILENAME, "w")
+>>> f.write("contenu important")   # <--- pas de \n à la fin
+>>> f.close()
+
+L'autre solution consiste à écrire une fonction qui invoque directement OpenSSL,
+par exemple avec la fonction "subprocess.run()" de la librairie standard de python.

@@ -1,0 +1,66 @@
+Les appareils domotiques les plus courants sont programmés en RML (Robot
+Meta-Language).  Une grammaire de RML et une description du langage et de son
+système de types sont disponible dans toutes les bonnes bibliothèques.
+
+
+LECTURE/ECRITURE DE PROGRAMMES RML
+==================================
+
+Les programmes RML commencent tous par une brève présentation du langage RML,
+donnée sous forme de commentaires (c'est très pratique car les programmeurs
+n'ont pas toujours la spécification complète sur eux).  Il y a deux sortes
+d'objets "intelligents" compatibles RML (montre, grille-pain, réveil, aspirateur,
+drones, sécateurs, etc.).  Les premiers (les plus simples) ont des programmes
+non-chiffrés et non-authentifiés.
+
+Ceux dont le programme est réputé sensibles ont, eux, des programmes chiffrés et
+authentifiés par un code d'authentification de message (MAC).
+
+DISCLAIMER : LES AUTEURS DE CE DOCUMENT DÉGAGENT TOUTE RESPONSABILITÉ SI DES
+             UTILISATEURS ENFREIGNENT VOLONTAIREMENT LES LOI.  CE DOCUMENT N'EST
+             PAS UN GUIDE D'UTILISATION D'OUTILS ILLÉGAUX.
+
+                           [--------REDACTED--------]
+-------------
+
+Ce dispositif permet de lire le code RML d'un objet intelligent.  Il renvoie le
+programme RML exécuté par l'objet.  Si le programme est chiffré, alors il est
+renvoyé en hexadécimal.  Le nom de l'algorithme de chiffrement est indiqué en
+commentaire, tout comme le nom du MAC utilisé pour l'authentification.
+
+Si le programme est en clair, alors c'est le clair qui est authentifié par un
+MAC.  Sinon, c'est le chiffré (avant encodage en hexa) qui est authentifié
+(paradigme "encrypt-then-MAC").
+
+DISCLAIMER : LA LECTURE ET LA POSSESSION NON-AUTORISÉE DE PROGRAMMES RML SONT
+             ILLÉGAUX DANS LA PLUPART DES PAYS, DONT LA FRANCE.
+
+
+                           [--------REDACTED--------]
+----------
+
+Cet autre dispositif permet de modifier le code d'un objet intelligent.  Il faut
+toujours fournir le code en clair.  Si l'objet intelligent a un programme
+"sensible", il le chiffrera lui-même avant de le stocker.
+
+Dans ce dernier cas, le programme fourni doit être authentifié par un MAC avec
+la clef (secrète) d'authentification du fabriquant de l'objet.  Le MAC est appliqué
+sur le code source du programme encodé en UTF-8.
+
+DISCLAIMER : LA MODIFICATION DU PROGRAMME RML DE N'IMPORTE QUEL OBJET INTELLIGENT
+             EST ILLÉGALE DANS LA PLUPART DES PAYS, DONT LA FRANCE.
+
+Par ailleurs, la modification du code RML d'un objet intelligent entraine généralement
+                           [--------REDACTED--------]
+risque non-trivial de briquer l'objet en question.
+
+
+Programmes RML sensibles
+------------------------
+
+Plusieurs algorithmes de chiffrement sont possibles, mais le plus courant est un
+chiffrement par flot nommé "TLCG".
+
+Les programmes sont authentifiés par un MAC avec une clef secrète hardcodée dans
+une mémoire inaccessible du dispositif.  Plusieurs MACs sont largement déployés,
+mais la plupart du temps, il s'agit de l'algorithme "tarMAC".
