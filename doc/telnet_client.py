@@ -85,9 +85,7 @@ class TelnetClient(TelnetProtocol):
         """
         sys.stdout.buffer.write(data)
         sys.stdout.flush()
-        self
-        if(data==b'Press any key.\r\r\n'):
-            self.transport.write(b'\n')
+        
         if(data[:10]==b'Challenge:'):
             print("\""+data[23:].decode().rstrip()+"\"")
             s = sign(data[23:].decode().rstrip())
@@ -95,17 +93,51 @@ class TelnetClient(TelnetProtocol):
             signature = binascii.hexlify(s).decode()
             self.transport.write(bytes(signature+'\n',"utf-8"))
 
+        if(data==b'Press any key.\r\r\n'):
+            self.transport.write(b'\n')
+
         if(data==b'Successful login. Press any key.\r\r\n'):
             self.transport.write(b'\n')
             self.transport.write(b'3\n')
             self.transport.write(b'3\n')
             self.transport.write(b'\n')
             self.transport.write(b'Q\n')
+            self.transport.write(b'prendre documentation\n')
+            self.transport.write(b'prendre downloader\n')
+            self.transport.write(b'prendre chargeur\n')
+            self.transport.write(b'prendre uploader\n')
+            self.transport.write(b'prendre SD\n')
             self.transport.write(b'sortir\n')
             self.transport.write(b'ascenseur\n')
+            self.transport.write(b'sortir\n')
+            self.transport.write(b'sortir\n')
+            self.transport.write(b'sortir\n')
+            self.transport.write(b'26\n')
+            self.transport.write(b'monter\n')
+            self.transport.write(b'monter\n')
+            self.transport.write(b'est\n')
+            self.transport.write(b'dist\n')
+            self.transport.write(b'12\n')
             self.transport.write(b'\n')
+            self.transport.write(b'prendre cable\n')
+            self.transport.write(b'brancher chargeur\n')
+            self.transport.write(b'utiliser SD\n')
             self.transport.write(b'sortir\n')
+            self.transport.write(b'descendre\n')
+            self.transport.write(b'descendre\n')
+            self.transport.write(b'24\n')
+            self.transport.write(b'25\n')
+            self.transport.write(b'monter\n')
+            self.transport.write(b'monter\n')
+            self.transport.write(b'monter\n')
+            self.transport.write(b'14\n')
+            self.transport.write(b'15\n')
+            self.transport.write(b'entrer bureau\n')
+            self.transport.write(b'prendre prog\n')
             self.transport.write(b'sortir\n')
+            self.transport.write(b'entrer serveur\n')
+            self.transport.write(b'prendre ecran\n')
+            self.transport.write(b'brancher ecran\n')
 
 
     def _start_keyboard_listener(self):

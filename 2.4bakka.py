@@ -93,39 +93,6 @@ def format(K,serial):
 
 
 
-def dechiffrement_rsa_upgrade(ciphertext,e,N,D,n_bit):
-    start = 1
-    batch = 1
-    num_batch = 0
-    product_batch = []
-    tab_x = []
-    with alive_bar(2**n_bit-start) as bar:
-        for j in range(start,2**n_bit):
-            x = pow(j,e,N)
-            tab_x.append(x)
-            batch = batch * x
-            product_batch.append(batch)
-            if(j%1024==0):
-                # print("Calcul batch numéro {}".format(num_batch))
-                X = ciphertext*modinv(batch,N) % N
-                product_batch.reverse()
-                tab_x.reverse()
-                for index in range(1,len(product_batch)):
-                    #print("{}/{}".format(index,len(product_batch)))
-                    y = X * product_batch[index] % N
-                    if(y in D):
-                        i = D[y]
-                        return (i,(1024-index)*num_batch + 1)
-                    #print("tab_x[{}] = {}".format(index,tab_x[index]))
-                    X = X * tab_x[index-1] % N
-                    #print("X = {}".format(X))
-                batch = 1
-                num_batch = num_batch + 1
-                product_batch = []
-                tab_x = []
-            bar()
-    return
-
 #D = create_dictionnaire(e,N)
 D = read_dictionnaire("dictionnaire_baka")
 
@@ -137,16 +104,17 @@ def work_log(workload):
     
     ciphertext,e,N,n_bit = data
     
-    start = int(((2**int(n_bit))*idx)/8)
+    start = int(((2**int(n_bit))*idx)/mp.cpu_count())
     if(start==0):start=1
-    end   =int(((2**int(n_bit))*(idx+1))/8)
-    print("thread {} working, from {} to {}".format(idx,start,end))
+    end   =int(((2**int(n_bit))*(idx+1))/mp.cpu_count())
     with alive_bar(2*(end - start +1)) as bar:
         tab = []
+        tab_x = {}
         prod = 1
         # calcul du porduit des 2^i à 2^i+1
         for k in range(start,end+1):
             x = pow(k,e,N)
+            tab_x[k] = x
             prod = (prod *x) %N
             tab.append(prod)
             bar()
@@ -155,7 +123,8 @@ def work_log(workload):
         # calcul de a0^-1, a1^-1,...,ap^-1 en utilisant 2^i+1 à 2^i
         cpt = len(tab)
         for j in range(end,start,-1):
-            xj = pow(j,e,N)                  # d
+            #xj = pow(j,e,N) 
+            xj = tab_x[j]                 # d
             # inv_x = modinv(x,N)
             inv_xj = X*tab[cpt-2] %N    # X * abc
             cpt-=1
@@ -169,6 +138,7 @@ def work_log(workload):
             bar()
     return("Not found")
 
+ 
 
 
 def get_result(result):
@@ -190,17 +160,17 @@ if __name__ == "__main__":
             pool.apply_async(work_log, args=(work[i],), callback=get_result)
         pool.close()
         pool.join()
-        print("Multiple values were find : ")
+        print("Multiple values were found : ")
         print(results)
         for a in results:
             if(a!="Not found"):
                 i,j = a
-                print("i = {} \nj = {} \n".format(i,j))
-                print("K trouvé  = {}".format(i*j%N))
+                print("i = {} \nj = {} ".format(i,j))
+                print("K trouvé       = {}".format(i*j%N))
                 K2 = i*j
                 K,serial = format(K2,0)
-                print("K bytes   = {}".format(K.hex()))
-                print("num série = {}".format(serial.hex()))
+                print("K hex format   = {}".format(K.hex()))
+                print("num série      = {}".format(serial.hex()))
                 HM = hmac.new(
                 key = K,
                 msg = serial,

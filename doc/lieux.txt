@@ -3,35 +3,6 @@ Couloir 26-00/2ème 				: friandise
 Couloir 14-15/4ème				: PPTI key
 Couloir 14-15/4ème				: salle admin avec programmeur de carte + plan du réseau, écran lcd 
 
-Horloge : 2020-11-05 10:59:45
-
-Vous êtes dans la salle serveur de la PPTI...  ou plutôt, vous êtes devant
-le sas du couloir froid qui contient les racks de serveurs de la PPTI.
-Il y a un lecteur de badge à côté de la porte.  Au mur une affiche indique :
-
-RSA avec e = 3, si x^3 trop petit modulo intervient pas, la racine cubique
-peut êter proche d'une réelle. Méthode de Newton avec des divisions euclidienne 
-la signature, une seule partie doit être correcte 
-
-  +---------------------------------------------------------------------+
-  |          ACCÈS AUX SERVEURS :                                       |
-  |                                                                     |
-  |  Votre badge de service doit contenir une signature qui prouve vos  |
-  |  droit d'accès.  Elle doit avoir l'ID ``ppti_server_room''.         |
-  |                                                                     |
-  |  Il doit s'agir d'une signature de la chaine :                      |
-  |          "PPTI SERVER ACCESS ON yyyy-mm-dd hh:mm UTC"               |
-  |  (en remplaçant yyyy par l'année, mm par le mois, dd par le jour    |
-  |   du mois, hh par l'heure et mm par les minutes).                   |
-  |                                                                     |
-  |  La signature doit vérifier correctement avec la clef de la PPTI.   |
-  |  Elle doit obéir à la norme RSA / PKCS#1 v1.5.                      |
-  |                                                                     |
-  |  Attention, la date doit être en temps universel (cf.  horloge).    |
-  |                                                                     |
-  |  *** Le responsable                                                 |
-  +---------------------------------------------------------------------+
-
 Ici se trouve une horloge murale.
 Ici se trouve un sas d'accès au couloir froid qui contient les serveurs.
 Ici se trouve un écran LCD.
@@ -55,15 +26,70 @@ Rotonde 24/4ème étage			    : porte blindée
 +--------------------------------------------------------------------------------+
 
 
+Amphi 25 : Walkman.
+
+PRENDRE carte micro-SD dowloader  chargeur universel  uploader
+
+take_UPLOADER:az (MAIN5):1|9514185ad84c996a46c84ad046466a99e8d189ac1b9fb8f2e4ce2b6a26e79419
+
+26-00/313 : flottant correctement arrondi,  corps de nombre, uploader, rapport de stage, gants de boxe,un système polynomial
+
+Il est tout gribouillé en rouge.  Il faut dire qu'il contient plein de bêtises.
+Par contre, une annotation attire particulièrement votre attention : elle
+est en noir et soulignée trois fois.  Elle dit : "passer en 24-25, 4ème".
+
+Iventaire :
+6.4807406984078602309659674361 (il représente le nombre sqrt(42) avec
+100 bits de précision garantie).
 
 
-Given value does not have the right size (32 + 256 bits)
-Rotonde 26/3ème 				: serrure électronique sur la porte du couloir 26-00/3ème (Crypto BAKA-Lock++) à faire 
-chiffré = 
-125da8e9e3ab23b877d95e4bc6745c1106a0a817c0eddf36c078f279199d8cb2
-3ab3273b93ee3678f8e023eb3f91d81ed4ec3c949938f8628825336f462b96b3
-a086e910e3ec1ce06ab8c309f9d97eba2bd040ca12fd7d54d9c109eb5d3665fd
-98bbe679ca45b3c2bc8bec99888e34e059adba12596a61655b0950ff33bbfe9e
+Ils sont rouges et portent la mention "MMA / SQUASHING BUGS".
+Un insecte écrasé est bien visible à la surface de l'un d'entre eux.
+
+Ici se trouve un corps de nombre.
+Il s'agit de QQ[sqrt(43)].  Il est quadratique réel.  Là-dedans,
+3482 + 531*sqrt(43) est un entier algébrique inversible (d'ailleurs il y en
+a une infinité d'autres) !
 
 
-prendre carte micro-SD dowloader  chargeur universel
+
+Ici se trouve un système polynomial.
+24*x*y - x^2 - y^2 - x^2*y^2 = 13,
+24*x*z - x^2 - z^2 - x^2*z^2 = 13,
+24*y*z - y^2 - z^2 - y^2*z^2 = 13
+
+
+Pied de la tour 25 : robot nettoyeur hors-service => utiliser uploader
+À cause du ransomware, il refuse les upgrades.
+
+utiliser downloader
+Il ne fonctionne pas car il lui manque un micrologiciel (``firmware'').
+
+conseil dowloader
+Vous pouvez obtenir quelques programmes en clair, mais celui qui vaut vraiment
+le coup est chiffré...  Il est sur le SEUL objet VRAIMENT intelligent dans toute
+cette histoire.  Regardez bien les autres étudiants.
+
+>>> regarder étudiante
+Elle est occupée à jouer à une sorte de tetris sur une borne d'arcade.  Les
+morceaux tombent tellement vite que vous les voyez à peine passer.  Elle a
+l'air d'être dans une espèce de transe et ne vous calcule pas du tout.  Comme
+elle a les cheveux courts, vous distinguez sa prise USB-BQ.
+
+>>> cable
+Brancher un cable sur elle sans son consentement pourrait ne pas lui plaire
+du tout.  En plus c'est contraire au respect des gestes barrières : qui vous
+dit qu'elle n'est pas contagieuse ?
+
+>>> regarder étudiant allongé
+Il est allongé au sol, face contre terre.  Vu la position du mobilier,
+vous supposez qu'il a dû tomber de la chaise sur laquelle il était assis
+devant un poste de travail.  Vous ne voyez pas très bien son visage, mais
+vous devinez la forme d'une prise USB-BQ dans son cou.  Il est vraiment
+complètement immobile, donc vous ne savez pas trop s'il est encore vivant.
+
+>>> utiliser cable
+Plutôt que d'essayer de brancher un cable sur ce pauvre type, il vaudrait mieux
+essayer de pratiquer les gestes de premier secours... Et puis vous ne savez pas
+ce qui l'a mis dans cet état. C'est peut-être encore à l'intérieur, alors dans le
+doute, mieux vaut s'abstenir.
