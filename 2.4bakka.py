@@ -64,8 +64,6 @@ from alive_progress import alive_bar
 import pickle
 
 import multiprocessing as mp
-import tqdm
-
 import hashlib
 import hmac
 from utils import *
@@ -98,6 +96,8 @@ D = read_dictionnaire("dictionnaire_baka")
 
 e = 0x10001 #e=65537 prime, Fermat primes e = 2**16 + 1
 N = 0x1ea982ba8f01d5e03163b0409a554484b8e145af768a8d3e66b84c9723d8604a33bd7c52033def81adfaf49beaa4f0f2b3b92370efb88f07665c5c35afdfd94752eacc4cf24ff3b96954ff391abaf39108df0cf11c26567ac2aa408143038ed11d53172667b95637a7cd3d6bc8972e6a4d7a503730db2af935d3baf8d5a5465d
+D = create_dictionnaire(e,N)
+D = read_dictionnaire("dictionnaire_baka")
 
 def work_log(workload):
     idx , data = workload[0],workload[1]
