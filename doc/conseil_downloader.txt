@@ -1,0 +1,85 @@
+
+On peut deviner le début du texte clair du programme chiffré grace aux autres.
+
+Avec le début du programme chiffré, on a le début du flux pseudo-aléatoire.
+
+Il nous faudrait la suite du flux pseudo-aléatoire... (ce conseil était payant)
+
+OK, allons-y.  Notons x[0] la graine du PRG et x[i+1] = a*x[i] % 2**128, où a
+désigne la bonne constante. Si on parvient à retrouver l'un des x[i], c'est
+gagné car alors on est dans la même situation que l'utilisateur légitime : on
+peut calculer tous les x[j] avec j >= i, et donc produire la suite du flux
+pseudo-aléatoire.  Pour accomplir cette tâche, on peut exploiter le début du flux
+pseudo-aléatoire, qui nous révèle les 8 bits de poids fort des premiers x[i].
+Notons y[i] == x[i] // 2**120. On connaît donc les premiers y[i].
+
+En fait, avec le début du flux pseudo-aléatoire, on peut calculer le vecteur :
+         z = [ y[i] * 2**120 for i in range(n) ].
+
+Le point crucial consiste à réaliser que ce vecteur z est une APPROXIMATION du
+vecteur x qu'on aimerait découvrir (les 8 bits de poids fort sont les bons, mais
+les 120 bits de poids faible de chaque coordonnée sont incorrects).  Si on regarde
+d'un peu plus près, on voit que |x[i] - z[i]| < 2**120, et donc que la distance
+euclidienne entre x et z est plus petite que sqrt(n) * 2**120.
+
+Si on tirait deux vecteurs (de taille n) d'entiers aléatoires entre 0 et 2**128,
+la distance entre les deux serait plutôt de l'ordre de sqrt(n) * 2**128.  Nos
+deux vecteurs x et z sont donc nettement plus proches que la moyenne.
+
+Ceci suggère fortement de voir ceci comme un problème de réseau euclidien : si
+on pouvait construire un réseau qui contienne x, alors on pourrait espérer que
+x soit le point du réseau le plus proche de z.  Si c'était le cas, x nous serait
+révélé en résolvant une instance du CLOSEST VECTOR PROBLEM dans le réseau (à
+partir de z).
+
+Il faut donc construire le réseau.  En fait, le vecteur x s'écrit :
+         x = [ x[0] * a**i (modulo 2**128) for i in range(n) ].
+
+S'il n'y avait pas le ``modulo n'', alors x appartiendrait à l'espace vectoriel
+de dimension 1 engendré par [ a**i for i in range(n) ] --- en effet, x est égal
+à ce vecteur multiplié par le scalaire x[0].
+Le problème, c'est qu'il y a le modulo.  Du coup, on peut écrire x d'une autre
+manière :
+         x = [ x[0] * a**i + k[i] * 2**128 for i in range(n) ],
+où k[i] est un vecteur d'entiers qu'on ne connaît pas (réduire quelque chose
+modulo N revient à y ajouter un bon multiple de N).  Mais ceci démontre que
+notre vecteur x est une combinaison linéaire à coefficients entiers des vecteurs
+suivants :
+
+[ 1,      a,   a**2,   a**3, ..., a**(n-1) ]
+[ 0, 2**128,      0,      0, ...,        0 ]
+[ 0,      0, 2**128,      0, ...,        0 ]
+[ 0,      0,      0, 2**128, ...,        0 ]
+[..........................................]
+[ 0,      0,      0,      0, ...,   2**128 ]
+
+Les coefficients de la combinaison linéaire sont [x[0], k[1], k[2], ..., k[n-1]].
+Les n vecteurs ci-dessus forment donc une base d'un réseau qui contient x.
+
+Est-ce que x est le point du réseau le plus proche de z ?  Autrement dit, peut-on
+récupérer x à partir de z en résolvant le problème CVP dans le réseau ?  Pour
+répondre à cette question, la manière standard est la suivante : notons λ le
+premier minimum du réseau (la norme du vecteur non-nul le plus court).  Par
+définition, il y a dans le réseau un AUTRE point à distance λ de x, mais il n'yen a aucun qui est plus proche.  Ce qu'il nous faudrait, c'est que z soit plus
+près de x que ce dernier ; autrement dit, il faudrait que sqrt(n) * 2**120 < λ.
+Il nous faudrait donc un moyen de vérifier si λ n'est pas trop petit, et bien
+évidemment, λ dépend de n...  On pourrait fixer n, déterminer λ exactement (en
+résolvant le SHORTEST VECTOR PROBLEM), et augmenter n tant que λ est trop petit.
+
+On peut aussi faire une estimation au doigt mouillé en utilisant l'heuristique
+gaussienne, qui nous indique que la taille du plus court vecteur est de l'ordre
+de sqrt(n) * Volume ** (1/n).  Comme le réseau est de rang plein, son volume est
+le déterminant de sa matrice génératrice, et comme elle est triangulaire supér-
+ieure, il est très facile à calculer : c'est (2**128)**(n-1). Il nous faut donc
+que sqrt(n) * 2**120 < sqrt(n) * (2**128)**(n-1)**(1/n). Si on simplifie ceci, on
+trouve : 16 < n. En fait, c'est complètement logique : on veut retrouver la
+graine x[0] qui fait 16 octets ; on a donc au moins besoin de 16 octets de flux
+pseudo-aléatoire.
+
+Reste à mettre tout ça en oeuvre.  L'usage du logiciel de calcul formel Sage, ou
+bien du paquet python fpylll est recommandé.  Les deux contiennent tout ce qu'il
+faut : LLL, SVP, CVP.  Par contre, fylll peut être pénible à installer selon la
+version du système que l'on a.  Suivre le guide donné sur github fonctionne.
+Ceci nécessite toutefois un compilateur C, donc bonne chance sous Windows...
+Il faut aussi noter que les matrices génératrices des réseaux DOIVENT être
+LLL-réduites avant de pouvoir faire SVP ou CVP dessus.

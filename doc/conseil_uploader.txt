@@ -1,0 +1,75 @@
+
+Il vous faut forger le MAC pour pouvoir espérer mettre à jour votre propre code.
+
+Vous ne connaissez pas K et vous ne parviendrez pas à casser l'AES.  Donc, vous
+devez vous concentrer sur la fonction de hachage SDBM, qui est faible --- elle
+est utilisée dans des bases de données, mais elle n'est pas de qualité crypto.
+
+Vous connaissez des paires (message, tag) valides pour tarMAC avec la clef K.
+Donc, vous savez que SDBM(message) == h et que AES(K, h) == tag.  Si vous
+parvenez à produire un message différent qui a la même empreinte h à travers la
+fonction de hachage SDBM, alors ce nouveau message aura le même tag que
+l'original --- or vous le connaissez, ce tag.
+
+Le problème se ramène donc à celui de forger une (seconde) préimage pour SDBM.
+On a SDBM(M_1) == h et on à un message (malhonnête) M_2 qu'on voudrait pouvoir
+faire passer pour authentique.  Le truc, c'est que vu comment SDBM fonctionne,
+on va avoir :
+    SDBM('fooooobar') == (SDBM('fooooo') * 65599**3 + SDBM('bar')) % 2**128.
+Par conséquent, une stratégie d'attaque valable consiste à trouver un SUFFIXE
+bien choisi tel que SDBM(M_2 || suffixe) == h.  Il faut donc que :
+                h == SDBM(M_2 || suffixe)
+                  == (SDBM(M_2) * 65599**len(suffixe) + SDBM(suffixe)) % 2**128
+    SDBM(suffixe) == (h - SDBM(M_2) * 65599**len(suffixe)) % 2**128.
+Bien sûr, il faut que la concaténation de M_2 et du suffixe ait l'air
+syntaxiquement valide pour son destinataire, mais avec des commentaires on peut
+s'en tirer.
+
+Reste donc à forger un suffixe qui a une empreinte h donnée. Il faut donc
+trouver une séquence d'octets S_0, S_1, ..., S_{n-1} tels que :
+    sum(65599**(n-1-i) * S_i, i=0..n) + k * 2**128 == h,      (0 <= S_i < 256).
+En fait, ceci revient à trouver une relation linéaire à ``petits coefficients''
+entre des entiers modulo N=2**128, donc c'est le problème typique qu'on peut
+résoudre avec LLL.
+
+Plus précisément, notons a = 65599 et posons la matrice (n+1) x (n+1) :
+         [ 1,  0,  0,  0, ...,  0,  0,  a**(n-1) ]
+         [ 0,  1,  0,  0, ...,  0,  0,  a**(n-2) ]
+         [ 0,  0,  1,  0, ...,  0,  0,  a**(n-3) ]
+    G == [.......................................].
+         [ 0,  0,  0,  0, ...,  1,  0,         a ]
+         [ 0,  0,  0,  0, ...,  0,  1,         1 ]
+         [ 0,  0,  0,  0, ...,  0,  0,    2**128 ]
+Si une solution à notre problème existe, alors on va avoir :
+    (S_0, ..., S_{n-1}, k) * G == (S_0, ..., S_{n-1}, h).
+Par conséquent, la stratégie est la suivante : chercher dans le réseau
+euclidien engendré par les lignes de G un vecteur proche de
+    target = (128, 128, ..., 128, h).
+(le choix de la valeur 128 pour les octets S_i sert maximiser la probabilité que
+les valeurs obtenues soient dans l'intervale [0; 256[).
+
+À quelles conditions va-t-on trouver un ``bon'' vecteur dans le réseau ?
+On peut utiliser le raisonnement (heuristique) suivant : avec n octets S_i
+(qu'on peut choisir librement), on peut former 256**n combinaisons linéaires
+des a**i, avec probablement assez peu de collisions entre elles. Du coup, on
+peut espérer qu'il existe des valeurs des S_i qui donnent h modulo 2**128 à
+partir du moment où 256**n est plus grand que 2**128.  En effet, il est
+plausible qu'alors on puisse former TOUTES les valeurs de 128 bits en faisant
+des combinaisons linéaires des a**i avec des coefficients de 8 bits (bien sûr,
+ce raisonnement n'est valide que si les trucs dont on fait des combinaisons
+linéaires, en l'occurrence les a**i, sont suffisamment ``aléatoires''...).
+Bref, il faut choisir n >= 16.  On peut toujours augmenter n.
+
+Si on trouve un vecteur proche de target dans le réseau egendré par les lignes
+de G, il nous révèle des valeurs pour les S_i.  Mais il se peut qu'il n'ait pas
+**exactement** la bonne valeur de h. Dans ce cas, on peut s'en tirer en ajustant
+un peu le dernier des S_i (celui qui n'est pas multiplié par une puissance de a).
+
+Il peut enfin y avoir un problème les octets obtenus de la sorte sont trop
+``moches'' pour être imprimables, ou au minimum pour passer pour de l'UTF-8
+correct.  Une solution simple consiste à fixer :
+    target = (64, 64, ..., 64, h).
+Ça augmente un peu les chances de tomber sur des nombres négatifs, mais ça
+augmente aussi les chances de tomber sur des caractères imprimables.
+
+

@@ -1,0 +1,258 @@
+-------------------------------- Robot nettoyeur pied tour 25 --------------------------------
+-----BEGIN RML PROGRAM -----
+# RML GRAMMAR
+# ===========
+#
+# <statements> ::= <empty> | <statement> | <statement> . <statements>
+#
+# <statement> ::= extern type <id>
+#             | let <id> : <type> = <expression>
+#             | extern def <id> ( <formals> ) -> <type>
+#             | def <id> ( <formals> ) -> <type> <code>
+#
+# <formals> ::= <empty> | <id> : <type> | <id> : <type> , <formals>
+#
+# <type> ::= <id> | <type> list | <type> maybe | anything | something | nothing
+#
+# <code> ::= { instructions }
+#
+# <instructions> ::= <empty> | <instruction> | <instruction> ; <instructions>
+#
+# <instruction> ::= <expression>
+#                 | let <id> : <type> = <expression>
+#                 | <id> = <expression>
+#                 | for <id> in <expression> <code>
+#                 | if <expression> <code>
+#                 | if <expression> <code else <code>
+#                 | case <expression> | None -> <code> | Some <id> -> <code>
+#                 | return <expression>
+#                 | return
+#                 | panic
+#
+# <expressions> ::= <empty> | <expression> | <expression> , <expressions>
+#
+# <expression> ::= None
+#              | <string>
+#              | <int>
+#              | [ <expression> ]                               --- list
+#              | not <expression>
+#              | <expression> <operator> <expression>
+#              | <id> ( <expressions> )                         --- function call
+#              | ( <expression> )
+#
+# <operator> ::= + | - | * | / | == | != | < | > | or | and | :: | ^
+#
+# -------------------------------------------------------------------------------
+#
+# RML TYPE SYSTEM
+# ===============
+#
+# RML is strongly typed, and the type discipline is checked statically at
+# compile-time. The special value None has type "nothing" (it denotes the absence
+# of value). We have the following rules:
+#
+# For all types R and S,
+#
+#     "anything" is a subtype of R,
+#     R          is a subtype of "something",
+#     "nothing"  is a subtype of "R maybe",
+#     R          is a subtype of "R maybe",
+#     "R list"   is a subtype of "S list"      iff    R is a subtype of S,
+#     "R maybe"  is a subtype of "S maybe"     iff    R is a subtype of S.
+#
+#
+# (Recall that S is a subtype of T if a value of type S can always be used in
+# place of a value of type T). Keen observers will have noticed that RML uses
+# non-structural subtyping.
+#
+# The programmer must declare the type of all variables (using the "let"
+# instruction). New values can simply be assigned to already-declared variables.
+# When a value is assigned to a variable, it must have a compatible type.
+#
+# The base types are string, data, int and bool. The + operator works with ints,
+# strings, data and list (it concatenates them). The -, *, /, <, > operators
+# require int arguments. The equality comparison operator == and != work with any
+# type. The :: operator (which appends an item at the end of a list) requires a
+# list and a compatible item. The ^ operator (XOR) only works on data.
+#
+# In other terms:
+#
+#      +  : (int, int) -> int
+#         | (string, string) -> string
+#         | (data, data) -> data
+#         | (R list, S list) -> R list    iff S is a subtype of R
+#         | (R list, S list) -> S list    iff R is a subtype of S
+#
+# -, *, / : (int, int) -> int
+#       ^ : (data, data) -> data
+#     ::  : (R list, S) -> R list         iff S a subtype of R
+#
+#    <, > : (int, int) -> bool
+# and, or : (bool, bool) -> bool
+#     not : (bool) -> bool
+#  ==, != : (something, something) -> bool
+#
+# The type system checks that arguments have compatible types in function calls,
+# and that the return values of function have a compatible type. Without argument,
+# the "return" statement is equivalent to "return None". The special "panic"
+# statement is equivalent to a "return" with a special value of type "anything".
+#
+# The "case" statement is specifically designed to deal with "R maybe" values ; in
+# the "Some <id>" branch, the name <id> is bound to a value of type R, which is
+# thus guaranteed not to be None.
+#
+# -------------------------------------------------------------------------------
+#
+# Ooops, your important files are encrypted
+#
+#
+def main(action : string maybe, direction : string maybe, item : string maybe) -> nothing {
+  #
+  # If you see this text, then your files are no longer accessible, because they
+  # have been encrypted.  Perhaps you are busy looking for a way to recover your
+  # files, but don't waste your time.  Nobody can recover your files without our
+  # decryption service.
+  #
+  # We guarantee that you can recover all your files safely and easily.  All you
+  # need to do is submit the payment and purchase the decryption key.
+  #
+  # Please follow the instructions:
+  #
+  # 1. Send $300 worth of Bitcoin to the following address:
+  #
+  #    1Mz7153HMuxXTuR2R1t78mGSdzaAtNbBWX
+  #
+  #
+  # 2. Send your Bitcoin walled ID and personnal installation key to e-mail
+  #    wowsmith123456@posteo.net. Your personnal installation key:
+  #
+  #    74fZ96-2Nx1Gm-yHQRWr-S8gaN6-8Bs1td-U2DKui-ZZpKJE-kE6sSN-o8tizV-gUeUMa
+  #
+  #
+  # If you already purchased your decryption key, please enter it below:
+  # >>>
+  #
+  panic
+}.
+-----END RML PROGRAM -----
+# Encryption: None
+# hash: [SDBM] 3920e5ec628cf585f4fca26cdd67b308
+# MAC: [tarMAC, 5246 bytes] 1c02ca8421eb3dd0f363a19b7717d5df
+
+---------------------------------------Robot Gardien hors service rotonde 24 4ème---------------------------------------------
+-----BEGIN RML PROGRAM -----
+# RML GRAMMAR
+# ===========
+#
+# <statements> ::= <empty> | <statement> | <statement> . <statements>
+#
+# <statement> ::= extern type <id>
+#             | let <id> : <type> = <expression>
+#             | extern def <id> ( <formals> ) -> <type>
+#             | def <id> ( <formals> ) -> <type> <code>
+#
+# <formals> ::= <empty> | <id> : <type> | <id> : <type> , <formals>
+#
+# <type> ::= <id> | <type> list | <type> maybe | anything | something | nothing
+#
+# <code> ::= { instructions }
+#
+# <instructions> ::= <empty> | <instruction> | <instruction> ; <instructions>
+#
+# <instruction> ::= <expression>
+#                 | let <id> : <type> = <expression>
+#                 | <id> = <expression>
+#                 | for <id> in <expression> <code>
+#                 | if <expression> <code>
+#                 | if <expression> <code else <code>
+#                 | case <expression> | None -> <code> | Some <id> -> <code>
+#                 | return <expression>
+#                 | return
+#                 | panic
+#
+# <expressions> ::= <empty> | <expression> | <expression> , <expressions>
+#
+# <expression> ::= None
+#              | <string>
+#              | <int>
+#              | [ <expression> ]                               --- list
+#              | not <expression>
+#              | <expression> <operator> <expression>
+#              | <id> ( <expressions> )                         --- function call
+#              | ( <expression> )
+#
+# <operator> ::= + | - | * | / | == | != | < | > | or | and | :: | ^
+#
+# -------------------------------------------------------------------------------
+#
+# RML TYPE SYSTEM
+# ===============
+#
+# RML is strongly typed, and the type discipline is checked statically at
+# compile-time. The special value None has type "nothing" (it denotes the absence
+# of value). We have the following rules:
+#
+# For all types R and S,
+#
+#     "anything" is a subtype of R,
+#     R          is a subtype of "something",
+#     "nothing"  is a subtype of "R maybe",
+#     R          is a subtype of "R maybe",
+#     "R list"   is a subtype of "S list"      iff    R is a subtype of S,
+#     "R maybe"  is a subtype of "S maybe"     iff    R is a subtype of S.
+#
+#
+# (Recall that S is a subtype of T if a value of type S can always be used in
+# place of a value of type T). Keen observers will have noticed that RML uses
+# non-structural subtyping.
+#
+# The programmer must declare the type of all variables (using the "let"
+# instruction). New values can simply be assigned to already-declared variables.
+# When a value is assigned to a variable, it must have a compatible type.
+#
+# The base types are string, data, int and bool. The + operator works with ints,
+# strings, data and list (it concatenates them). The -, *, /, <, > operators
+# require int arguments. The equality comparison operator == and != work with any
+# type. The :: operator (which appends an item at the end of a list) requires a
+# list and a compatible item. The ^ operator (XOR) only works on data.
+#
+# In other terms:
+#
+#      +  : (int, int) -> int
+#         | (string, string) -> string
+#         | (data, data) -> data
+#         | (R list, S list) -> R list    iff S is a subtype of R
+#         | (R list, S list) -> S list    iff R is a subtype of S
+#
+# -, *, / : (int, int) -> int
+#       ^ : (data, data) -> data
+#     ::  : (R list, S) -> R list         iff S a subtype of R
+#
+#    <, > : (int, int) -> bool
+# and, or : (bool, bool) -> bool
+#     not : (bool) -> bool
+#  ==, != : (something, something) -> bool
+#
+# The type system checks that arguments have compatible types in function calls,
+# and that the return values of function have a compatible type. Without argument,
+# the "return" statement is equivalent to "return None". The special "panic"
+# statement is equivalent to a "return" with a special value of type "anything".
+#
+# The "case" statement is specifically designed to deal with "R maybe" values ; in
+# the "Some <id>" branch, the name <id> is bound to a value of type R, which is
+# thus guaranteed not to be None.
+#
+# -------------------------------------------------------------------------------
+#
+extern def print (message : string) -> nothing.
+
+def main(action : string maybe, direction : string maybe, item : string maybe) -> nothing {
+  print("I'm just another BRICK in the wall !");
+
+  # At least this one won't bother us anymore -- CB, KH, FM, QM & DV.
+  panic
+}.
+-----END RML PROGRAM -----
+# Encryption: None
+# hash: [SDBM] b158fd3acbe6bb31b8e457b55a138d65
+# MAC: [tarMAC, 4466 bytes] eaece65187d18146c2e4843ffa7bd85d
