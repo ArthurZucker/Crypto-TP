@@ -93,3 +93,33 @@ Plutôt que d'essayer de brancher un cable sur ce pauvre type, il vaudrait mieux
 essayer de pratiquer les gestes de premier secours... Et puis vous ne savez pas
 ce qui l'a mis dans cet état. C'est peut-être encore à l'intérieur, alors dans le
 doute, mieux vaut s'abstenir.
+
+
+
+
+
+
+monter 
+monter 
+est 
+dist 
+12 
+              
+prendre cable 
+brancher chargeur 
+utiliser SD 
+sortir 
+descendre 
+descendre 
+25 
+24
+14 
+up
+15
+entrer bureau 
+prendre prog 
+sortir 
+entrer serveur 
+prendre ecran 
+brancher ecran 
+

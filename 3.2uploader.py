@@ -77,13 +77,25 @@ if __name__ == "__main__":
     plaintext = message+"#"
     #plaintext = "Les sanglots longs\nDes violons\nDe l'automne\nBlessent mon coeur\nD'une langueur\nMonotone."
     #message = plaintext.encode('ascii')
-    print(SDBM(plaintext))
+    #print(SDBM(plaintext,True))
+
     raw_h = SDBM(message)
-    #raw_h = "5b2b3ae637b20f76e5dc5ad2933912c2"
+    # 05c633c629f8e88cdf441232a9180e1c (whithout suffix)
+    #h = "c3bf1cb210265c38637c2b3134f25d03" uncrypted but unmodified
+    raw_h = "b158fd3acbe6bb31b8e457b55a138d65"
+    raw_h = "78860833beb947c29e0d6d5d39e8d80d"
     h  = int(raw_h,base=16)
     n = 25
+    possible = "ba51097d68a54c1be850b4cc8238fdaa"
     target = (int(raw_h,base=16) - (int(SDBM(plaintext),base=16) * 65599**(n))) % 2**128
+    #target = (int(raw_h,base=16) - (int(possible,base=16) * 65599**(n))) % 2**128
+    print(plaintext)
     suffixe = find_suffixe(target)
     print(plaintext+suffixe)
-    print("h                  : ", h)
-    print("SBDM(m || suffixe) : ",int(SDBM(plaintext+suffixe),base=16))
+    print("h                  : ", hex(h))
+    print("SBDM(m || suffixe) : ",(SDBM(plaintext+suffixe)))
+    with open("doc/downloader_me_decode_signed.txt",'w') as f:
+        f.write("-----BEGIN RML PROGRAM -----\n")
+        f.write(plaintext+suffixe)
+        f.write("\n-----END RML PROGRAM -----\n")
+        #f.write("# Encryption: [TLCG]\n# hash: [SDBM] 78860833beb947c29e0d6d5d39e8d80d\n# MAC: [tarMAC, 17893 bytes] 9102f56e1b6d748df4bb8c01f7daa686")

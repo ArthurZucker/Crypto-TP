@@ -1,4 +1,3 @@
--------------------------------- Robot nettoyeur pied tour 25 --------------------------------
 -----BEGIN RML PROGRAM -----
 # RML GRAMMAR
 # ===========
@@ -103,38 +102,15 @@
 #
 # -------------------------------------------------------------------------------
 #
-# Ooops, your important files are encrypted
-#
-#
+extern def print (message : string) -> nothing.
+
 def main(action : string maybe, direction : string maybe, item : string maybe) -> nothing {
-  #
-  # If you see this text, then your files are no longer accessible, because they
-  # have been encrypted.  Perhaps you are busy looking for a way to recover your
-  # files, but don't waste your time.  Nobody can recover your files without our
-  # decryption service.
-  #
-  # We guarantee that you can recover all your files safely and easily.  All you
-  # need to do is submit the payment and purchase the decryption key.
-  #
-  # Please follow the instructions:
-  #
-  # 1. Send $300 worth of Bitcoin to the following address:
-  #
-  #    1Mz7153HMuxXTuR2R1t78mGSdzaAtNbBWX
-  #
-  #
-  # 2. Send your Bitcoin walled ID and personnal installation key to e-mail
-  #    wowsmith123456@posteo.net. Your personnal installation key:
-  #
-  #    74fZ96-2Nx1Gm-yHQRWr-S8gaN6-8Bs1td-U2DKui-ZZpKJE-kE6sSN-o8tizV-gUeUMa
-  #
-  #
-  # If you already purchased your decryption key, please enter it below:
-  # >>>
-  #
+  print("I'm just another BRICK in the wall !");
+
+  # At least this one won't bother us anymore -- CB, KH, FM, QM & DV.
   panic
 }.
 -----END RML PROGRAM -----
 # Encryption: None
-# hash: [SDBM] 3920e5ec628cf585f4fca26cdd67b308
-# MAC: [tarMAC, 5246 bytes] 1c02ca8421eb3dd0f363a19b7717d5df
+# hash: [SDBM] b158fd3acbe6bb31b8e457b55a138d65
+# MAC: [tarMAC, 4466 bytes] 812324d089d635e1f2d4b06fdd4ec96d

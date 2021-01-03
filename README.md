@@ -14,3 +14,7 @@ Now I have to sign a text :
 - [x] #11 TME #3 : ordre d'un groupe
 - [x] #13 TME #4 : pohlig
 - [x] Attaque admin
+
+## Downloader and uploader :
+
+- Use downloader on "me", then should we modify line 382?
