@@ -1,0 +1,588 @@
+-----BEGIN RML PROGRAM -----
+# RML GRAMMAR
+# ===========
+# 
+# <statements> ::= <empty> | <statement> | <statement> . <statements>
+#     
+# <statement> ::= extern type <id>
+#             | let <id> : <type> = <expression>
+#             | extern def <id> ( <formals> ) -> <type> 
+#             | def <id> ( <formals> ) -> <type> <code>
+#     
+# <formals> ::= <empty> | <id> : <type> | <id> : <type> , <formals>
+#     
+# <type> ::= <id> | <type> list | <type> maybe | anything | something | nothing
+#     
+# <code> ::= { instructions }
+#    
+# <instructions> ::= <empty> | <instruction> | <instruction> ; <instructions>
+#    
+# <instruction> ::= <expression>
+#                 | let <id> : <type> = <expression>
+#                 | <id> = <expression>
+#                 | for <id> in <expression> <code>
+#                 | if <expression> <code>
+#                 | if <expression> <code else <code>
+#                 | case <expression> | None -> <code> | Some <id> -> <code>
+#                 | return <expression>
+#                 | return
+#                 | panic
+#     
+# <expressions> ::= <empty> | <expression> | <expression> , <expressions>
+# 
+# <expression> ::= None 
+#              | <string>
+#              | <int>
+#              | [ <expression> ]                               --- list
+#              | not <expression>
+#              | <expression> <operator> <expression>
+#              | <id> ( <expressions> )                         --- function call
+#              | ( <expression> )
+# 
+# <operator> ::= + | - | * | / | == | != | < | > | or | and | :: | ^ 
+# 
+# -------------------------------------------------------------------------------
+# 
+# RML TYPE SYSTEM
+# ===============
+# 
+# RML is strongly typed, and the type discipline is checked statically at 
+# compile-time. The special value None has type "nothing" (it denotes the absence
+# of value). We have the following rules:
+# 
+# For all types R and S, 
+# 
+#     "anything" is a subtype of R,
+#     R          is a subtype of "something",
+#     "nothing"  is a subtype of "R maybe",
+#     R          is a subtype of "R maybe",
+#     "R list"   is a subtype of "S list"      iff    R is a subtype of S,
+#     "R maybe"  is a subtype of "S maybe"     iff    R is a subtype of S.
+# 
+# 
+# (Recall that S is a subtype of T if a value of type S can always be used in 
+# place of a value of type T). Keen observers will have noticed that RML uses 
+# non-structural subtyping.
+# 
+# The programmer must declare the type of all variables (using the "let" 
+# instruction). New values can simply be assigned to already-declared variables.
+# When a value is assigned to a variable, it must have a compatible type.
+# 
+# The base types are string, data, int and bool. The + operator works with ints, 
+# strings, data and list (it concatenates them). The -, *, /, <, > operators
+# require int arguments. The equality comparison operator == and != work with any 
+# type. The :: operator (which appends an item at the end of a list) requires a 
+# list and a compatible item. The ^ operator (XOR) only works on data. 
+# 
+# In other terms:
+# 
+#      +  : (int, int) -> int
+#         | (string, string) -> string
+#         | (data, data) -> data
+#         | (R list, S list) -> R list    iff S is a subtype of R
+#         | (R list, S list) -> S list    iff R is a subtype of S
+# 
+# -, *, / : (int, int) -> int
+#       ^ : (data, data) -> data
+#     ::  : (R list, S) -> R list         iff S a subtype of R
+# 
+#    <, > : (int, int) -> bool
+# and, or : (bool, bool) -> bool
+#     not : (bool) -> bool  
+#  ==, != : (something, something) -> bool
+# 
+# The type system checks that arguments have compatible types in function calls,
+# and that the return values of function have a compatible type. Without argument,
+# the "return" statement is equivalent to "return None". The special "panic" 
+# statement is equivalent to a "return" with a special value of type "anything".
+#     
+# The "case" statement is specifically designed to deal with "R maybe" values ; in
+# the "Some <id>" branch, the name <id> is bound to a value of type R, which is 
+# thus guaranteed not to be None.
+# 
+# -------------------------------------------------------------------------------
+# 
+# types
+extern type int.
+extern type string.
+extern type bool.
+extern type data.
+extern type ROOM.
+extern type ITEM.
+extern type DIRECTION.
+
+# formating functions
+extern def string_of_int (i : int) -> string.
+extern def direction_from_string(name : string) -> DIRECTION maybe.
+extern def direction_to_string(dir : DIRECTION) -> string.
+
+# rooms
+extern def room_name(room : ROOM) -> string.
+extern def room_description(room : ROOM) -> string.
+extern def room_from_name (name : string) -> ROOM maybe.
+extern def neighbor (room : ROOM, direction : DIRECTION) -> ROOM maybe.
+extern def room_items (room : ROOM) -> ITEM list.
+extern def room_directions (room : ROOM) -> DIRECTION list.
+
+# items
+extern def item_name (item : ITEM) -> string.
+extern def item_portable (item : ITEM) -> string maybe.           # returns explanation if item cannot be taken
+extern def item_use (item : ITEM) -> anything.                    # does not return; may have side effects
+extern def item_match (item : ITEM, name : string) -> bool.       # true if "name" describes the "item"
+extern def item_gender (item : ITEM) -> string.  # "m" ou "f"
+extern def item_state (item : ITEM) -> string maybe.              # contextual description (may change over time)
+extern def item_location (item : ITEM) -> ROOM.
+extern def item_description_handles (item : ITEM) -> data list.   # handling of potential censorship
+extern def handle_ciphertext (handle : data) -> data.  
+extern def handle_key (serial_number : string, handle : data) -> data maybe.  
+
+# symmetric encryption
+extern def encrypt(key : data, plaintext : string) -> data.
+extern def decrypt(key : data, ciphertext : data) -> string maybe.
+
+# status
+extern def here () -> ROOM.
+extern def score_points () -> int maybe.
+extern def score_hints () -> int maybe.
+extern def score_percent () -> int maybe.
+extern def hint (word : string maybe) -> string maybe.
+
+# Side-effects
+extern def print (message : string) -> nothing.
+extern def move_self_to_room (room : ROOM) -> nothing.
+extern def move_item_to_room (item : ITEM, room : ROOM) -> nothing.
+
+
+# global variable
+let SERIALNO : string = "A87312".                  # robot-specific serial number -- must be customized during manufacturing
+let previous_location : ROOM maybe = None.         # to handle going "back"
+let false : bool = (1 == 0).                       # They promised they would make these constants part of the base language...
+let true : bool = (0 == 0).
+let hint_warning : bool = true.
+
+
+# Special room names... see their uses below.
+let INVENTORY : string = "__INVENTORY__".
+let TRASH : string = "__TRASH__".
+
+
+
+def undefinite_article(gender : string) -> string {
+  if gender == "m" {
+    return "un"
+  };
+  if gender == "f" {
+    return "une"
+  };
+  if gender == "pl" {
+    return "des"
+  };
+  print("Erreur interne irrecupérable (genre neutre/autres/undef pas géré)");
+  panic
+}.
+
+def definite_article(gender : string) -> string {
+  if gender == "m" {
+    return "le"
+  };
+  if gender == "f" {
+    return "la"
+  };
+  if gender == "pl" {
+    return "les"
+  };
+  print("Erreur interne irrecupérable (genre neutre/autres/undef pas géré)");
+  panic
+}.
+
+def pronoun(gender : string) -> string {
+  if gender == "m" {
+    return "Il"
+  };
+  if gender == "f" {
+    return "Elle"
+  };
+  if gender == "pl" {
+    return "Ils/elles"
+  };
+  print("Erreur interne irrecupérable (genre neutre/autres/undef pas géré)");
+  panic
+}.
+
+def identify_item_in_item_list (name : string, stuff : ITEM list) -> ITEM list {
+  let candidates : ITEM list = [];
+  for item in stuff {
+    if item_match(item, name) {
+      candidates = candidates :: item
+    }
+  };
+  return candidates
+}.
+
+
+def len (l : something list) -> int {
+  let i : int = 0;
+  for _ in l {
+    i = i + 1;
+  };
+  return i
+}.
+
+
+# returns an item in l, if any ; otherwise returns None
+def single_item (l : ITEM list) -> ITEM maybe {
+  let stuff : ITEM maybe = None;
+  for item in l {
+    stuff = item;
+  };
+  return stuff
+}.
+
+
+# A big hack. Let's hope we are never audited!
+def get_inventory() -> ROOM {
+  case room_from_name(INVENTORY)
+  | None -> {
+    print("Erreur interne irrécupérable. Veuillez passer à l'infirmerie!");
+    panic
+  }
+  | Some inventory -> {
+    return inventory;  
+  }
+}.
+
+
+def my_stuff() -> ITEM list {
+  return room_items(get_inventory());
+}.
+
+
+def identify_item (name : string) -> ITEM maybe {
+  let all_items : ITEM list = room_items(here()) + my_stuff();
+  let matching_items : ITEM list = identify_item_in_item_list(name, all_items);
+  let l : int = len(matching_items);
+  if l == 0 {
+    print("Il n'y a pas de " + name);
+    return None
+  };
+  if len(matching_items) > 1 {
+    print("Le mot " + name + " est ambigü. Cela pourrait être :");
+    for item in matching_items {
+      print(" - " + item_name(item));
+    };
+    return None
+  };
+  return single_item(matching_items)
+}.
+
+
+def help() -> nothing {
+  print("Pour interagir avec le monde extérieur, il faut s'exprimer en langage");
+  print("(presque) naturel. Une phrase typique se compose d'un verbe,");
+  print("éventuellement suivi d'un complément d'objet. Dans l'ensemble, mieux");
+  print("vaut parler à l'infinitif. Autant dire :");
+  print("    ``regarder statue''.");
+  print("");
+  print("C'est plus facile à comprendre que :");
+  print("    ``Hmmm.... et si nous regardions la jolie statue qui se trouve dans");
+  print("      la pièce, hein ? Juste au cas où ça nous donnerait des idées...''");
+  print("");
+  print("On peut aussi, si on préfère, essayer de parler anglais.");
+  print("");
+  print("Comme les informaticiens aiment être perçus comme des gens lettrés,");
+  print("la saisie est sensible aux accents (étudiant != etudiant).");
+  print("");
+  print("Le monde se compose d'objets et d'endroits.");
+  print("");
+  print("Les objets peuvent être examinés, utilisés ou pris (ça les ajoute à");
+  print("l'inventaire). Certains ont des effets particuliers quand on les");
+  print("utilise. Ils ne sont pas tous forcément très utiles. Certains sont");
+  print("particulièrement importants. On peut parfois faire référence aux objets");
+  print("en utilisant un morceau de leur nom (doc convient pour documentation).");
+  print("");
+  print("On ne peut se déplacer que dans des endroits qui sont proches de là où");
+  print("on se trouve. On peut utiliser les points cardinaux (nord, sud, est, ouest)");
+  print("si on arrive à se repérer comme ça, ou bien essayer le nom de l'endroit où");
+  print("on voudrait aller. On peut aussi essayer des directives un peu génériques");
+  print("comme monter, descendre, avancer, revenir, entrer, sortir, etc.");
+  print("");
+  print("Si le système ne réagit pas comme on s'y attend, on peut tenter de");
+  print("formuler les choses autrement, ou bien alors c'est que ce qu'on veut");
+  print("faire est tout simplement impossible.");
+  print("");
+  print("On peut aussi demander des conseils si on est coincé ou afficher son");
+  print("score actuel. Enfin, CTRL+D permet de se déconnecter.");
+  print("");
+  print("Merci de le signaler les bugs ou les erreurs manifestes.")
+}.
+
+
+def show_score() -> nothing {
+  case score_points()
+  | None -> {
+    print("Il faut que vous soyez logué pour que votre score ait un sens.")
+  }
+  | Some x -> {
+    print("Vous avez obtenu " + string_of_int(x) + " points.");
+    case score_hints()
+    | None -> { panic }
+    | Some y -> {
+      print("Vous avez utilisé " + string_of_int(y) + " indices.");
+    };
+    case score_percent()
+    | None -> { panic }
+    | Some z -> {
+      print("Vous avez exploré " + string_of_int(z) + "% des lieux.")
+    }
+  }
+}.
+
+
+def give_hint(word : string maybe) -> nothing {
+  if hint_warning {
+    print("Vous pouvez obtenir des indications avec cette commande mais ATTENTION ! Les indices");
+    print("obtenus ne sont PAS gratuits (plus précisément, le système mémorise que vous demandez");
+    print("des indications...).");
+    print("");
+    print("Sans argument, cette commande vous suggérera une tâche à accomplir (ça, c'est gratuit).");
+    print("");
+    print("Avec le nom d'un objet en argument, la commande vous donnera des conseils de plus en");
+    print("plus précis (et de plus en plus CHERS) pour vous aider à acquérir ou à utiliser l'objet");
+    print("en question.");
+    print("");
+    print("Si vous avez bien compris ces conditions d'utilisation, vous pouvez ré-essayer.");
+    hint_warning = false;
+    return
+  };
+  case hint(word)
+  | None -> {
+    print("Je ne peux pas vous aider à ce sujet...")
+  }
+  | Some advice -> {
+    print(advice)
+  }
+}.
+
+
+def look_around() -> nothing {
+  let location : ROOM = here();
+  print(room_description(location));
+  for item in room_items(location) {
+    let gender : string = item_gender(item);
+    let payload : string = undefinite_article(gender) + " " + item_name(item) + ".";
+    if gender == "pl" {
+      print("Ici se trouvent " + payload)
+    } else {
+      print("Ici se trouve " + payload)
+    }
+  }
+}.
+
+
+def setup(start_location : string maybe) -> nothing {
+  case start_location
+  | None -> {
+    print("Erreur interne irrécupérable [no start room given]. Veuillez pointer à l'infirmerie immédiatement !");
+    panic
+  }
+  | Some room_name -> {
+    case room_from_name(room_name)
+    | None -> {
+      print("Erreur interne irrécupérable [bad start room given]. Veuillez pointer à l'infirmerie immédiatement !");
+      panic
+    }
+    | Some room -> {
+      print("[Lower brain functions initialized]");
+      print("");
+      move_self_to_room(room);
+      look_around()
+    }
+  }
+}.
+
+
+def move(direction : string maybe) -> nothing {
+  case direction
+  | None -> {
+    print("Dans quelle direction ?");
+    return
+  }
+  | Some direction -> {
+    let destination : ROOM maybe = None;
+    if direction == "BACK" {
+      if previous_location == None {
+        print("Vous ne pouvez pas revenir en arrière.");
+        return
+      } else {
+        destination = previous_location
+      }
+    } else {
+      case direction_from_string(direction)
+      | None -> {
+        print("Je ne comprends pas la direction fournie. C'est très bizarre.");
+        panic
+      }
+      | Some motion -> {
+        destination = neighbor(here(), motion)  
+      }
+    }
+  };
+  case destination
+  | None -> {
+    print("Impossible depuis cet endroit");
+    return
+  }
+  | Some target -> {
+    previous_location = here();
+    move_self_to_room(target);
+    look_around();
+  }
+}.
+
+
+def show_inventory() -> nothing {
+    let inventory : ITEM list = my_stuff();
+    if inventory == [] {
+      print("Vous n'avez rien avec vous.")
+    } else {
+      print("Vous avez :");
+      for item in inventory {
+        print(" - " + undefinite_article(item_gender(item)) + " " + item_name(item) + ".")
+      }
+    }
+}.
+
+
+
+def take_item(item : ITEM) -> nothing {
+  case item_portable(item)
+  | None -> {
+    let inventory : ROOM = get_inventory();
+    if item_location(item) == inventory {
+      print(pronoun(item_gender(item)) + " est déjà en votre possession.")
+    } else {
+      move_item_to_room(item, inventory);
+      print("OK");
+    }
+  }
+  | Some reason -> {
+    print(reason);
+  }
+}.
+
+
+def drop_item(item : ITEM) -> nothing {
+  let inventory : ROOM = get_inventory();
+  if item_location(item) != inventory {
+    print(pronoun(item_gender(item)) + " n'est pas en votre possession.")
+  } else {
+    move_item_to_room(item, here());
+    print("OK");
+  }
+}.
+
+def inspect_item(item : ITEM) -> nothing {
+  for handle in item_description_handles(item) {
+    case handle_key(SERIALNO, handle)   # request the decryption key from the censory engine
+    | None -> {
+      print("                           \x1b[1;31m[--------REDACTED--------]\x1b[m")  # no key given, the string is censored
+    }
+    | Some key -> {
+      let encrypted_payload : data = handle_ciphertext(handle);
+      case decrypt(key, encrypted_payload)
+      | None -> {
+        print("        [Decryption error]");
+        panic
+      }
+      | Some payload -> {
+        print(payload)
+      }
+    }
+  };
+  case item_state(item)
+  | None -> {}
+  | Some state -> {
+    print(state)
+  }
+}.
+
+
+# action = SETUP / HELP / GO / LOOK / USE / TAKE / DROP / SAY / INVENTORY / SCORE
+def main(action : string maybe, direction : string maybe, item : string maybe) -> nothing {
+  # actions by default
+  if action == None {
+    if direction != None {
+      action = "GO"
+    };
+    if item != None {
+      action = "USE"
+    };
+  };
+  if action == "HELP" {
+    help();
+    return
+  };
+  if action == "SCORE" {
+    show_score();
+    return
+  };
+  if action == "HINT" {
+    give_hint(item);
+    return
+  };
+  if action == "SETUP" {
+    setup(item);
+    return;
+  };
+  if action == "GO" {
+    move(direction);
+    return;
+  };
+  if action == "INVENTORY" {
+    show_inventory();
+    return;
+  };
+  if (action == "LOOK") and (item == None) {
+    look_around();
+    return;
+  };
+  if action == "SAY" {
+    case item
+    | None -> { print("...") }
+    | Some word -> { print(word) };
+    return
+  };
+  
+  # all other actions involve an item
+  case item 
+  | None -> {
+    print("Merci de vous exprimer clairement et de fournir un complément d'objet direct (valide).");
+    return
+  }
+  | Some word -> {
+    case identify_item(word) 
+    | None -> { 
+      return
+    }
+    | Some stuff -> {
+      if action == "USE" {
+        item_use(stuff);
+        return
+      };
+      if action == "TAKE" {
+        take_item(stuff);
+        return
+      };
+       if action == "DROP" {
+        drop_item(stuff);
+        return
+      };
+      if action == "LOOK" {
+        inspect_item(stuff);
+        return
+      }
+    }
+  };
+  print("Je n'ai pas compris ce que vous voulez faire")
+}.
+-----END RML PROGRAM -----
