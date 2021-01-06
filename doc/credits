@@ -1,0 +1,65 @@
+STAFF
+=====
+Programmation, scénario*  : Charles Bouillaguet
+Scénario additionel       : Florette Martinez
+Testeuse                  : Florette Martinez        (merci, merci, merci !)
+Source d'exercices        : Damien Vergnaud
+
+* enfin, si on ose dire...
+
+
+MUSIQUES
+========
+Les musiques ont été pompées dans...
+
+Les films :
+- "Ghost in the Shell" (1995)
+- "Ghost in the Shell 2: Innocence" (2004)
+- "Ghost in the Shell: Arise" (OVA, 2013-2014).
+
+Les jeux vidéos :
+- "Secret of Mana" (1993)
+- "Chrono Trigger" (1995)
+- "Half-life" (1998)
+- "Legend of Zelda, the Ocarina of Time" (1998)
+- "Legend of Zelda, Skyward Sword" (2011)
+- "Undertale" (2015)
+- "Legend of Zelda, Breath of the Wild" (2017).
+
+
+EFFETS SONORES
+==============
+Les sons ont été pompés dans...
+
+Les jeux vidéos :
+- "The Legend of Zelda: A Link to the Past" (1991)
+- "Chrono Trigger" (1995)
+- "Duke Nukem 3D" (1996)
+- "Legend of Zelda, the Ocarina of Time" (1998)
+- "Half-life" (1998)
+- "Fallout 3" (2004)
+- "Portal 2" (2011),
+- "Katana Zero" (2019).
+
+Ainsi que dans quelques banques de son libres sur internet.
+
+
+INSPIRATION
+===========
+Le premier jeu d'aventure en mode texte est le "Colossal Cave adventure"
+créé en 1975-77 par William Crowther et Don Woods. Don Knuth a produit une
+version ré-écrite en C et très commentée en 2010 (qui été soigneusement
+étudiée pour réaliser ceci).
+
+Le concept et une partie du scénario (notamment la mémoire effacée et la
+présence d'un programme "secret" qu'il faut récupérer puis hacker pour
+pouvoir abuser du "moteur physique") sont directement volés à l'excellent
+concours de programmation organisé en 2006 par la conférence internationale
+sur la programmation fonctionnelle (ICFP) --- "the cult of the bound variable".
+
+
+DISCLAIMER
+==========
+Toute ressemblance avec des lieu ou des personnages ayant vraiment existé
+n'est pas du tout accidentelle.  Par contre, leur rôle ou leur destin dans
+le "scénario" relèvent bien sûr de la fiction.

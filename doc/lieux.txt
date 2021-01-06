@@ -28,7 +28,6 @@ Rotonde 24/4ème étage			    : porte blindée
 
 Amphi 25 : Walkman.
 
-PRENDRE carte micro-SD dowloader  chargeur universel  uploader
 
 take_UPLOADER:az (MAIN5):1|9514185ad84c996a46c84ad046466a99e8d189ac1b9fb8f2e4ce2b6a26e79419
 
@@ -98,7 +97,28 @@ doute, mieux vaut s'abstenir.
 
 
 
+telnet crypta.fil.cool
 
+porte
+technique
+automate
+1
+az
+
+prendre carte micro-SD 
+prendre downloader
+prendre uploader
+prendre chargeur universel
+prendre lecteur DIMM
+prendre azote
+prendre une carte électronique 
+
+sortir
+bouton
+sortir
+sortir
+sortir
+26
 monter 
 monter 
 est 
@@ -122,4 +142,175 @@ sortir
 entrer serveur 
 prendre ecran 
 brancher ecran 
+sortir
+sortir
+e
+down
+24
+24
+up
 
+
+UFR_INFO_24_25
+UFR_LOCAL_VIDEOS
+
+AMPHI_25
+
+MIR_SB
+MIR_LIBRARY
+MIR_BASEMENT
+
+
+
+SESI_24_25
+
+PPTI_14_15_4
+PPTI_SERVER_ROOM
+PPTI_COMPUTER_ROOM
+PPTI_ADMIN_OFFICE
+PPTI_SERVER_CAGE
+
+ROTONDE_25_4
+ROTONDE_24_4
+
+
+SFPN_OFFICE
+TOWER_24
+TOWER_23
+
+STUDENTS_CORNER_OUTSIDE
+STUDENTS_CORNER
+
+ESPLANADE_ZAMANSKI
+CAMPUS_EXIT
+ZAMANSKI_HALL
+
+
+LIP6_26_00_313
+LIP6_26_00_319 -> 321
+LIP6_QI_ROOM # important
+LIP6_25_26_1
+LIP6_MEETING_ROOM
+LIP6_DIRECTORS_OFFICE  # crédits
+
+ROTONDE_26_3
+
+LIP6_24_25_4
+LIP6_24_25_403
+LIP6_24_25_406
+LIP6_24_25_410
+LIP6_24_25_412
+LIP6_24_25_413
+LIP6_24_25_414
+LIP6_24_25_416
+
+ZAMANSKI_SUBBASEMENT_DSI_DATACENTER_2
+
+
+* Approbation du compte-rendu de la réunion précédente
+* Répartition des financements
+* Préparation de l'évacuation imminente du campus
+  * (re)Mise en place du télétravail
+  * Mesures sanitaires dans le laboratoire
+* ``Accident'' du couloir 25-25/4ème
+  * Élements de langage
+  * Message aux familles
+  * Nettoyage et récupération du couloir
+* Concours de recrutement
+* Questions diverses
+
+
+Sur la page du dessus est écrit en gros : COLD-BOOT ATTACK.  En dessous, il y
+a des notes griffonnées à la va-vite :
+  * Ouvrir
+  * Verser azote liquide **rapidement**
+  * Extraire barrette RAM
+  * Utiliser lecteur
+  * Reconstituer clef d'accès à l'enclave sécurisée
+  * ouvrir
+  * attaque physique (au pied-de-biche)
+
+il y a écrit : CENSORY ENGINE HARDWARE SECURITY.  En dessous, il y a un
+schéma.  C'est une espèce de cocotte-minute contenant une barrette de DRAM,
+un petit CPU et des accéléromètres.  Apparemment, le système est prévu pour
+couper le courant à l'intérieur dès que la cocotte-minute est ouverte ou
+déplacée.  Seul un cable sort de l'ensemble pour interagir avec l'extérieur.
+Une grosse flèche pointe vers la barrette de RAM avec la mention : "SECURE
+ENCLAVE ACCESS KEY".  Il y a aussi quelques mentions manuscrites :
+- CRYPTO: PROUVABLEMENT SÛR (cf.  DV) ---> CANAUX AUXILIAIRES ?
+- POWER LOST --> DATA LOST.  Que faire ?
+- NE PEUT-ON S'EN APPROCHER SANS CETTE SATAN
+
+La dernière phrase n'a pas été terminée.
+
+
+  LIBRAIRIE STANDARD RML 1.34
+===========================
+
+Par défaut, RML inclut les types prédéfinis suivants :
+
+	int, string, bool, data, ROOM, ITEM, DIRECTION.
+
+Le type "data" désigne une chaine de bits arbitraire et opaque.
+
+Les fonctions suivantes sont prédéfinies :
+
+string_of_int (i : int) -> string
+direction_from_string(name : string) -> DIRECTION maybe
+direction_to_string(dir : DIRECTION) -> string
+room_name(room : ROOM) -> string
+room_description(room : ROOM) -> string
+room_from_name (name : string) -> ROOM maybe
+neighbor (room : ROOM, direction : DIRECTION) -> ROOM maybe
+room_items (room : ROOM) -> ITEM list
+room_directions (room : ROOM) -> DIRECTION list
+item_name (item : ITEM) -> string
+item_portable (item : ITEM) -> string maybe.
+item_use (item : ITEM) -> anything.
+item_match (item : ITEM, name : string) -> bool.
+item_gender (item : ITEM) -> string
+item_state (item : ITEM) -> string maybe
+item_location (item : ITEM) -> ROOM
+item_description_handles (item : ITEM) -> data list
+handle_ciphertext (handle : data) -> data.
+handle_key (serial_number : string, handle : data) -> data maybe.
+encrypt(key : data, plaintext : string) -> data
+decrypt(key : data, ciphertext : data) -> string maybe
+here () -> ROOM
+score_points () -> int maybe
+score_hints () -> int maybe
+score_percent () -> int maybe
+hint (word : string maybe) -> string maybe
+print (message : string) -> nothing
+move_self_to_room (room : ROOM) -> nothing
+move_item_to_room (item : ITEM, room : ROOM) -> nothing
+
+
+Pour la plupart d'entre elles, il n'est pas nécessaire de fournir plus de détails.
+Voici cependant quelques précisions :
+
+* encrypt() et decrypt() réalisent le chiffrement AES-128-CBC avec la clef donnée
+  en argument. Un IV est généré aléatoirement.
+
+
+EXTENSIONS DE LA VERSION 1.35
+=============================
+
+Les fonctions suivantes ont été ajoutées à la version 1.35 de RML. Elles
+permettent notamment de manipuler des "data".
+
+left_half (stuff : data) -> data
+right_half (stuff : data) -> data
+sha256  (stuff : data) -> data
+to_hex (stuff : data) -> string
+from_hex (hex : string) -> data maybe
+
+* left_half() et right_half() renvoient respectivement la première et la deuxième
+  moitié de la chaine de bits donnée en argument.
+
+* La fonction sha256() renvoie 256 bits.
+
+* La fonction to_hex() permet d'examiner des "data".
+
+* from_hex() renvoie None si la chaine "hex" ne décrit pas de l'hexadécimal
+  valide.

@@ -1,4 +1,3 @@
------BEGIN RML PROGRAM -----
 # RML GRAMMAR
 # ===========
 # 
@@ -506,6 +505,24 @@ def inspect_item(item : ITEM) -> nothing {
   }
 }.
 
+def teleportation(direction : string) -> nothing {
+  print("Vous utiliser la téléportation");
+  let destination : ROOM maybe = room_from_name(direction);
+  case destination
+  | None -> {
+    print("C'est NONE la sauce");
+    print(room_name(here()));
+    return
+  }
+  | Some target -> {
+    print(room_name(target));
+    previous_location = here();
+    move_self_to_room(target);
+    look_around();
+    print(room_name(here()));
+  };
+}.
+
 
 # action = SETUP / HELP / GO / LOOK / USE / TAKE / DROP / SAY / INVENTORY / SCORE
 def main(action : string maybe, direction : string maybe, item : string maybe) -> nothing {
@@ -547,12 +564,17 @@ def main(action : string maybe, direction : string maybe, item : string maybe) -
     return;
   };
   if action == "SAY" {
+    print("USING TELEPORTATION (previous say)");
+    print(room_name(here()));
     case item
     | None -> { print("...") }
-    | Some word -> { print(word) };
+    | Some word -> {
+      teleportation(word);
+      print(word);
+    };
     return
   };
-  
+  print("all other actions involve an item");
   # all other actions involve an item
   case item 
   | None -> {
@@ -585,5 +607,5 @@ def main(action : string maybe, direction : string maybe, item : string maybe) -
   };
   print("Je n'ai pas compris ce que vous voulez faire")
 }.
-#@E:BA5IH<=J=E?@SH?K):V>C@
+#@E8<7EFO1;NC/5E@>=8F7KM@O
 -----END RML PROGRAM -----

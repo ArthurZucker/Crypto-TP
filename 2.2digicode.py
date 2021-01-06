@@ -102,7 +102,7 @@ def testGenModP(a, p):  # want generator base for discrete log (and Pohlig-Hellm
     return True
 
 if __name__ == '__main__':
-	PohligHellmanModP(27, 10001, (2**61-1))
+	print(PohligHellmanModP(27, 10001, (2**61-1)))
 ##    PohligHellmanModP(95, 37, 2017)
 ##    PohligHellmanModP(19, 95, 3001)
 ##    PohligHellmanModP(7531, 6, 8101)

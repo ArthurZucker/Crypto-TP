@@ -139,6 +139,8 @@ def main(action : string maybe, direction : string maybe, item : string maybe) -
 # hash: [SDBM] 3920e5ec628cf585f4fca26cdd67b308
 # MAC: [tarMAC, 5246 bytes] 1c02ca8421eb3dd0f363a19b7717d5df
 
+# Wrong MAC. Hash(SDBM) of your program=763886ddcc5a3dea2b7867769b940a02 pas le même
+
 ---------------------------------------Robot Gardien hors service rotonde 24 4ème---------------------------------------------
 -----BEGIN RML PROGRAM -----
 # RML GRAMMAR
@@ -256,3 +258,6 @@ def main(action : string maybe, direction : string maybe, item : string maybe) -
 # Encryption: None
 # hash: [SDBM] b158fd3acbe6bb31b8e457b55a138d65
 # MAC: [tarMAC, 4466 bytes] eaece65187d18146c2e4843ffa7bd85d
+
+4466 -> 4419
+57 bytes are missing... which means 57 characters are missing
