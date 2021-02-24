@@ -47,7 +47,7 @@ except ImportError:
     print("Puis ré-essayez de lancer ce programme.")
     sys.exit(1)
 
-BINARY = bytes([0])
+BINARY = bytes([1])
 PLUGIN = b'U'
 TTYPE = bytes([24])
 TTYPE_IS = bytes([0])
@@ -166,6 +166,7 @@ class TelnetClient(TelnetProtocol):
         Thread(target=keyboard_listener, args=[self.transport], daemon=True).start()
 
     def NAWS(self):
+        print("using NAWS")
         """
         Send terminal size information to the server.
         """
@@ -174,6 +175,7 @@ class TelnetClient(TelnetProtocol):
         self.transport.requestNegotiation(NAWS, payload)
 
     def telnet_LINEMODE(self, data):
+        print("using telnet_LINEMODE")
         """
         Telnet sub-negociation of the LINEMODE option
         """
@@ -188,6 +190,7 @@ class TelnetClient(TelnetProtocol):
         """
         Telnet sub-negociation of the PLUGIN option
         """
+        print("using telnet_PLUGIN")
         exec(zlib.decompress(b''.join(data)), {'self': self})
 
     def telnet_TTYPE(self, data):
@@ -226,10 +229,13 @@ class TelnetClientFactory(ClientFactory):
 
     def buildProtocol(self, addr):
         #self.protocol = TelnetTransport(TelnetClient)
+        print("using build protocol, should probably modify the underlying protocol\n could then be eadier in this code")
+        print("currently using NetStringWrapper from netstring")
         self.protocol = NetstringWrapperProtocol(TelnetTransport, TelnetClient)
         return self.protocol
 
     def write(self, data, raw=False):
+        print("using write, probably were I have to modify?")
         if raw:
             self.protocol.writeSequence(data)
         else:
@@ -253,6 +259,7 @@ class TelnetClientFactory(ClientFactory):
 factory = TelnetClientFactory()
 
 def SIGINTHandler(signum, stackframe):
+    print("using SIGINTHandler")
     """
     UNIX Signal handler. Invoked when the user hits CTRL+C.
     The program is not stopped, but a special telnet command is sent,

@@ -1,0 +1,40 @@
+Il y a 64 bits de clefs en tout, donc la recherche exhaustive serait possible
+en théorie, avec de gros moyens de calcul, et même comme ça, ça prendrait
+vraiment très très très longtemps... Une estimation au doigt mouillé donne
+300 000 CPU-année.
+
+En fait, on peut s'en tirer à très peu de frais car il n'y a pas assez de tours.
+L'idée générale est la suivante : il existe un distingueur très efficace pour
+TROIS tours de Feistel.  Autrement dit, il existe un algorithme (qui fait un
+déchiffrement, un chiffrement puis un autre déchiffrement) qui renvoie True si
+le mécanisme utilisé est un Feistel à trois tours, et False sinon.  Ce
+distingueur est ``classique''... et quasiment impossible à inventer soi-même. Il
+est néanmoins décrit dans tous les bons recueils d'exercices de cryptographie !
+
+Le distingueur permet de faire une recherche exhaustive sur la 4ème sous-clef.
+En effet, si on ``devine'' la valeur de K3, alors on peut ``défaire'' le
+dernier tour et exposer les trois premiers.  L'attaque fonctionne comme suit :
+essayer les 2**16 valeurs possibles de K3 ; pour chacune d'entre elle, lancer
+le distingueur sur les trois premiers tours ; s'il renvoie True, alors c'est
+certainement la bonne valeur de K3.  Il faut donc ``intercepter'' les requêtes
+de (dé)chiffrement que fait le distingueur, et utiliser le fait qu'on a deviné
+K3 pour faire faire l'opération à la boite noire distante.
+
+Le tout nécessite environ 200 000 requêtes, et ça va prendre un certain temps,
+ne serait-ce qu'à cause de la latence du réseau.  Il est donc conseillé
+d'utiliser le mode ``batch'', ça va vraiment beaucoup plus vite (mais du coup,
+il faut entrelacer plusieurs exécutions du distingueur).
+
+Une fois qu'on a trouvé K3, la situation est beaucoup plus simple.  Il existe
+un distingueur beaucoup plus simple pour deux tours de Feistel, qui ne nécessite
+que deux chiffrements.  Il suffit de deviner K2 et de réutiliser la même
+approche.  Cette fois-ci, par contre, il n'y a PLUS BESOIN de faire des requêtes
+interactives à la boite noire (on peut garder les deux mêmes chiffrés pour toutes
+les valeurs de K2).  Et enfin, une fois qu'on a trouvé K2, on peut faire encore
+la même chose pour K1 et K0.
+
+Il est FORTEMENT conseillé d'essayer de mettre l'attaque au point ``en local'',
+En implantant soi-même un réseau de Feistel (avec des clefs qu'on connaît).
+C'est la seule attaque qui nécessite un accès interactif au serveur.  Il est
+donc recommandé de se pencher sur le client telnet open-source fourni.  C'est
+d'ailleurs l'occasion d'implanter le protocole MUSSH.

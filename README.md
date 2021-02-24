@@ -1,20 +1,21 @@
 # CRYPTAvancée
 Here, in order to work on the TP, use `telnet crypta.fil.cool`
-Use `-x` for encryption of the datastream
 
-## Regristration :
-I used `openssl ecparam -name wap-wsg-idm-ecid-wtls7 -genkey -out private-key.pem` then `openssl ec -in private-key.pem -pubout -out public-key.pem`
-Now I have to sign a text :
-`openssl dgst -sha256 -sign private-key.pem  -out /tmp/sign.sha256 challenge.txt`
+# Connexion 
+Use `python 0.0sign.py "string to sign"`. It should print out the hexadecimal string onbtained using the `private-key.pem`. 
 
-## Exercices in TME room
+# Lab Work in TME room
+They are all available using `python 1.0TME.py <TME n°>`
+- [x] #5 TME 	#1 : équation linéaire diophantienne
+- [x] #7 TME 	#2 : théorème des restes chinois
+- [x] #11 TME 	#3 : ordre d'un groupe
+- [x] #13 TME 	#4 : pohlig
 
-- [x] #5 TME #1 : équation linéaire diophantienne
-- [x] #7 TME #2 : théorème des restes chinois
-- [x] #11 TME #3 : ordre d'un groupe
-- [x] #13 TME #4 : pohlig
-- [x] Attaque admin
+# Bakka, server, digicode and friandise
 
-## Downloader and uploader :
 
-- Use downloader on "me", then should we modify line 382?
+
+# Downloader and uploader :
+
+- Use downloader on "me"
+- Use uploader on me with the new code, voiding the warranty 

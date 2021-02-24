@@ -41,7 +41,7 @@ def lrack(n, k=3):
         rac1 = rac2
 
 
-def fake_sign(time="2020-11-05 10:59 UTC"):
+def fake_sign(time="2020-11-05 10:59"):
     m = "PPTI SERVER ACCESS ON {} UTC".format(time)
     MODULU = '00:ed:6b:8f:06:d5:b0:30:d2:47:e9:79:94:dd:1d:04:f3:01:69:81:db:de:88:e5:b8:f7:99:a3:08:17:ce:8f:70:97:c6:e8:a0:ba:5f:75:79:eb:a7:46:e7:7d:1b:d3:62:7d:01:ca:b7:93:d1:18:57:10:a9:c4:d8:82:23:10:47:1b:b6:01:26:f9:5b:fc:0d:ac:38:ee:26:c4:fb:67:42:d3:9a:c4:9f:0e:82:8e:4c:da:f4:2f:49:1b:10:cc:8e:dd:84:74:af:88:e6:ed:31:a5:f7:de:20:b7:84:26:0a:8a:70:af:6e:02:06:60:64:91:a3:2b:2b:a3:d6:cc:50:65:c3:18:35:a9:0b:b9:f3:37:79:62:2c:84:00:b4:a4:6c:4a:24:7d:6a:eb:f0:22:35:86:13:53:cb:9c:ed:94:80:27:70:66:33:94:43:62:bf:6f:82:37:30:dc:7d:9f:6e:5c:2b:52:a8:83:59:fc:fd:18:2d:bd:1d:75:30:09:03:0a:64:88:aa:16:0d:02:1c:71:5e:35:06:5d:54:2c:0f:6f:62:ef:5f:d1:fd:02:d4:f8:0e:ce:f6:af:2a:bf:69:5c:bf:df:ae:2f:e7:69:03:4e:f2:84:9c:9a:92:d0:10:97:0a:37:39:c0:f3:7e:fb:71:af:df:16:ab:da:4d'
     n = int(MODULU.replace(':', ''), base=16)

@@ -1,14 +1,14 @@
 # BAKA meet in the middle + maléabilité de RSA
-# use RFID tags 
+# use RFID tags
 # Every system has a RSA key Pair
-# badges have ---OUI   --- containing serial number on 32 bits + secret key of a chip 
+# badges have ---OUI   --- containing serial number on 32 bits + secret key of a chip
 # locks  have ---MOUAIS--- containing public key + linked to server
 
 # OUI + MOUAIS => chaine de K de 48 random bits
 # => Encrypt(K,public_key) => OUI => RSA decrypt sends (n°serie,HMAC(K,n°serie)) => MOUAIS
 
 
-##### We want to send and HMAC as if we were 000000 
+##### We want to send and HMAC as if we were 000000
 ##### Thus we want the MOUAIS to decrypt our message, and find that HMAC(K,0000000) is correct how?
 ##### well, K^d^e = 1 %N. Thus, HMAC(K,OOOOO)^d = ????
 # RSA : m->int => m**e%N
@@ -91,8 +91,39 @@ def format(K,serial):
 
 
 
-#D = create_dictionnaire(e,N)
-D = read_dictionnaire("dictionnaire_baka")
+def dechiffrement_rsa_upgrade(ciphertext,e,N,D,n_bit):
+    start = 1
+    batch = 1
+    num_batch = 0
+    product_batch = []
+    tab_x = []
+    with alive_bar(2**n_bit-start) as bar:
+        for j in range(start,2**n_bit):
+            x = pow(j,e,N)
+            tab_x.append(x)
+            batch = batch * x
+            product_batch.append(batch)
+            if(j%1024==0):
+                # print("Calcul batch numéro {}".format(num_batch))
+                X = ciphertext*modinv(batch,N) % N
+                product_batch.reverse()
+                tab_x.reverse()
+                for index in range(1,len(product_batch)):
+                    #print("{}/{}".format(index,len(product_batch)))
+                    y = X * product_batch[index] % N
+                    if(y in D):
+                        i = D[y]
+                        return (i,(1024-index)*num_batch + 1)
+                    #print("tab_x[{}] = {}".format(index,tab_x[index]))
+                    X = X * tab_x[index-1] % N
+                    #print("X = {}".format(X))
+                batch = 1
+                num_batch = num_batch + 1
+                product_batch = []
+                tab_x = []
+            bar()
+    return
+
 
 e = 0x10001 #e=65537 prime, Fermat primes e = 2**16 + 1
 N = 0x1ea982ba8f01d5e03163b0409a554484b8e145af768a8d3e66b84c9723d8604a33bd7c52033def81adfaf49beaa4f0f2b3b92370efb88f07665c5c35afdfd94752eacc4cf24ff3b96954ff391abaf39108df0cf11c26567ac2aa408143038ed11d53172667b95637a7cd3d6bc8972e6a4d7a503730db2af935d3baf8d5a5465d
@@ -101,15 +132,15 @@ D = read_dictionnaire("dictionnaire_baka")
 
 def work_log(workload):
     idx , data = workload[0],workload[1]
-    
+
     ciphertext,e,N,n_bit = data
-    
+
     start = int(((2**int(n_bit))*idx)/mp.cpu_count())
     if(start==0):start=1
     end   =int(((2**int(n_bit))*(idx+1))/mp.cpu_count())
     with alive_bar(2*(end - start +1)) as bar:
         tab = []
-        tab_x = {}
+        tab_x ={}
         prod = 1
         # calcul du porduit des 2^i à 2^i+1
         for k in range(start,end+1):
@@ -123,8 +154,8 @@ def work_log(workload):
         # calcul de a0^-1, a1^-1,...,ap^-1 en utilisant 2^i+1 à 2^i
         cpt = len(tab)
         for j in range(end,start,-1):
-            #xj = pow(j,e,N) 
-            xj = tab_x[j]                 # d
+            #xj = pow(j,e,N)                  # d
+            xj = tab_x[j]
             # inv_x = modinv(x,N)
             inv_xj = X*tab[cpt-2] %N    # X * abc
             cpt-=1
@@ -138,7 +169,6 @@ def work_log(workload):
             bar()
     return("Not found")
 
- 
 
 
 def get_result(result):
@@ -150,7 +180,7 @@ def get_result(result):
 
 if __name__ == "__main__":
     if(len(sys.argv)>1):
-        Kchiffre = int(sys.argv[1])
+        Kchiffre = int(sys.argv[1],base=16)
         print("Number of cpu : ", mp.cpu_count())
         nbits = 24
         work = [[i, [Kchiffre,e,N,(nbits)]] for i in range(mp.cpu_count())]
@@ -160,17 +190,17 @@ if __name__ == "__main__":
             pool.apply_async(work_log, args=(work[i],), callback=get_result)
         pool.close()
         pool.join()
-        print("Multiple values were found : ")
+        print("Multiple values were find : ")
         print(results)
         for a in results:
             if(a!="Not found"):
                 i,j = a
-                print("i = {} \nj = {} ".format(i,j))
-                print("K trouvé       = {}".format(i*j%N))
+                print("i = {} \nj = {} \n".format(i,j))
+                print("K trouvé  = {}".format(i*j%N))
                 K2 = i*j
                 K,serial = format(K2,0)
-                print("K hex format   = {}".format(K.hex()))
-                print("num série      = {}".format(serial.hex()))
+                print("K bytes   = {}".format(K.hex()))
+                print("num série = {}".format(serial.hex()))
                 HM = hmac.new(
                 key = K,
                 msg = serial,
@@ -179,9 +209,8 @@ if __name__ == "__main__":
                 answer = str(serial.hex()) + HM
                 print("Possible key : {}".format(answer))
                 break
-        
 
-        
 
-		
+
+
 

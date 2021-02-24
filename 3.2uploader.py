@@ -32,9 +32,8 @@ def SDBM(M,verbose=False):
     hash=hex(t)
     return hash
 
-def find_suffixe(h,verbose=False):
+def find_suffixe(h,n=25,verbose=True):
 	a = 65599
-	n = 25 
 	G = IntegerMatrix(n+1,n+1)
 	for i in range(0,n+1):
 		if(i!=n):
@@ -56,7 +55,7 @@ def find_suffixe(h,verbose=False):
 	somme2 = sum([65599**(n-1-i) * S[i] for i in range(len(S)-2)]) % 2**128
 	if(verbose):print("somme2 = {}".format(somme2%2**128))
 	if(verbose):print(h-somme2)
-
+	print("h = ",h)
 	S[n-1]=h-somme2
 	if(verbose):print("target = {}".format(target))
 	if(verbose):print("new S  = {}".format(S))
@@ -69,23 +68,25 @@ def find_suffixe(h,verbose=False):
 		suffixe = suffixe+chr(i)
 	print(45*'_')
 	print("Found suffixe : \""+suffixe+"\"")
-	print(45*'_')
+	print(45*'_')   
 	return (suffixe)
 
 
 if __name__ == "__main__":
-    message = recup_message("doc/downloader_me_decode.txt")
+    message = recup_message("doc/Nasrine.txt")
     plaintext = message+"#"
-    raw_h = "78860833beb947c29e0d6d5d39e8d80d" # TARGET SDBM corresponding to tarMAC
+    #raw_h = "78860833beb947c29e0d6d5d39e8d80d" # TARGET SDBM corresponding to tarMAC
+    raw_h = "3ec87ad0de7c7aede4eea6d3fc8205d7"
     h  = int(raw_h,base=16)
     n = 25
+    print((int(SDBM(plaintext),base=16)))
     target = (int(raw_h,base=16) - (int(SDBM(plaintext),base=16) * 65599**(n))) % 2**128
-    print(plaintext)
-    suffixe = find_suffixe(target)
-    print(plaintext+suffixe)
+    #print(plaintext)
+    suffixe = find_suffixe(target,n)
+    #print(plaintext+suffixe)
     print("h                  : ", hex(h))
     print("SBDM(m || suffixe) : ",(SDBM(plaintext+suffixe)))
-    with open("doc/downloader_me_decode_signed.txt",'w') as f:
+    with open("doc/Nasrine_signed.txt",'w') as f:
         f.write(plaintext+suffixe)
         f.write("\n-----END RML PROGRAM -----\n")
         

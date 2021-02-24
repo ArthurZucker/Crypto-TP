@@ -97,6 +97,7 @@ class ServerFactory(protocol.Factory):
     to the server.
     """
     def buildProtocol(self, addr):
+        print("using build protocol, should probably modify the underlying protocol\n could then be eadier in this code")
         server_protocol = ServerProtocol()
         reactor.connectTCP(args.connect_host, args.connect_port, ClientFactory(server_protocol))
         return server_protocol

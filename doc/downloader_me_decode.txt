@@ -511,7 +511,7 @@ def teleportation(direction : string) -> nothing {
   let destination : ROOM maybe = room_from_name(direction);
   case destination
   | None -> {
-    print("C'est NONE la sauce");
+    print("Pas de direction de TP");
     print(room_name(here()));
     return
   }
@@ -524,6 +524,19 @@ def teleportation(direction : string) -> nothing {
   };
 }.
 
+def voisin() -> nothing{
+  let directions : DIRECTION list  = room_directions(here());
+  for item in directions {
+    let temp : ROOM maybe = neighbor(here(),item);
+    case temp 
+    | None -> {
+      print("pas de room la");
+    }
+    | Some target -> {
+      print(room_name(target));
+    };
+  }; 
+}.
 
 # action = SETUP / HELP / GO / LOOK / USE / TAKE / DROP / SAY / INVENTORY / SCORE
 def main(action : string maybe, direction : string maybe, item : string maybe) -> nothing {
@@ -568,7 +581,10 @@ def main(action : string maybe, direction : string maybe, item : string maybe) -
     print("USING TELEPORTATION (previous say)");
     print(room_name(here()));
     case item
-    | None -> { print("...") }
+    | None -> { 
+      print("...");
+      voisin();
+    }
     | Some word -> {
       teleportation(word);
       print(word);

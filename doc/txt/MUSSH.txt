@@ -1,0 +1,11 @@
+- Protocole netstring implémenté sur le port 6023 du serveur de l'université. 
+- protocole MUSSH sans l'échange de clef sur le port 6024
+- MUSSH normal, port 6025. 
+
+Résumé telnet : 
+ - NetString emballe simplement : data -> len(data):data 
+ - Couche de chiffrement authentifié : elle doit se faire apèrs le client telnet.
+	+ chiffrement avec AES en mode compteur 
+	+ authentifié avec HMAC-SHA256 
+	=> Chacun possède donc 3 clefs, clef de l'aes, clef d'initialisation du mode compteur, clef de HMAC 
+	

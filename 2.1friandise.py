@@ -9,7 +9,6 @@ import os
 import base64
 import os
 from alive_progress import alive_bar
-import threaded
 import binascii
 from binascii import hexlify, unhexlify
 # has to be in hexadecimal 
