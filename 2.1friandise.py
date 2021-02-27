@@ -27,7 +27,7 @@ def f(x):
 	return (y.encode())
 
 def F(x0,x,nbit):
-	m = sha256(x0+x+b"caclpaz")
+	m = sha256(x0+x+u0)
 	y = m.hexdigest()
 	return (y.encode()[:int(nbit/4)])
 
@@ -68,7 +68,10 @@ def brent2(x0,nbits):
 			hare =  F(x0,hare,nbits)
 			lam += 1
 			bar()
-		print("Cycle found")
+		if( t<tmax) : print("Cycle found")
+		else : 
+			print("Not found")
+			exit(0)
 		# Find the position of the first repetition of length λ
 	t=0
 	with alive_bar(tmax) as bar:
@@ -90,7 +93,7 @@ def brent2(x0,nbits):
 			bar()
  
 	return lam, mu,x0+h1,x0+h2
-
+u0 = b"hqlidsuhvbipsud"
 if __name__ == "__main__":
 	if(len(sys.argv)>2):
 		user = sys.argv[1]
@@ -98,9 +101,10 @@ if __name__ == "__main__":
 		_,_,key1,key2 = brent2(user,nb)
 		print("Key 1 :"+str(key1.decode()))
 		print("Key 2 :"+str(key2.decode()))
-		print("sha(K1) = "+str(f(key1+b"caclpaz").decode()))
-		print("sha(K2) = "+str(f(key2+b"caclpaz").decode()))
-		print("Hexa1 : "+str((key1+b"caclpaz").hex()))
-		print("Hexa2 : "+str((key2+b"caclpaz").hex()))
+		
+		print("sha(K1)      = "+str(f(key1+u0).decode()))
+		print("sha(K2)      = "+str(f(key2+u0).decode()))
+		print("Hexa1 : "+str((key1+u0).hex()))
+		print("Hexa2 : "+str((key2+u0).hex()))
 		print(len(key1))
 		

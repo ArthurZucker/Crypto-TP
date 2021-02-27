@@ -35,6 +35,7 @@ This is a rudimentary telnet client. It has few features, but it
 implements a non-standard extension that improves the students experience.
 """
 from netstrings import NetstringWrapperProtocol
+from chiffrement import ChiffrementWrapperProtocol
 from sign import sign
 try:
     from twisted.internet.protocol import Protocol, ClientFactory
@@ -47,7 +48,7 @@ except ImportError:
     print("Puis ré-essayez de lancer ce programme.")
     sys.exit(1)
 
-BINARY = bytes([1])
+BINARY = bytes([0])
 PLUGIN = b'U'
 TTYPE = bytes([24])
 TTYPE_IS = bytes([0])
@@ -72,6 +73,8 @@ class TelnetClient(TelnetProtocol):
         self.NAWS()
         self._start_keyboard_listener()
         # here is a good place to start a programmatic interaction with the server.
+        
+        self.transport.write(b'ascenseur\n\n')
         self.transport.write(b'porte\n')
         self.transport.write(b'\n')
         self.transport.write(b'technique\n')
@@ -166,7 +169,6 @@ class TelnetClient(TelnetProtocol):
         Thread(target=keyboard_listener, args=[self.transport], daemon=True).start()
 
     def NAWS(self):
-        print("using NAWS")
         """
         Send terminal size information to the server.
         """
@@ -175,7 +177,6 @@ class TelnetClient(TelnetProtocol):
         self.transport.requestNegotiation(NAWS, payload)
 
     def telnet_LINEMODE(self, data):
-        print("using telnet_LINEMODE")
         """
         Telnet sub-negociation of the LINEMODE option
         """
@@ -190,7 +191,6 @@ class TelnetClient(TelnetProtocol):
         """
         Telnet sub-negociation of the PLUGIN option
         """
-        print("using telnet_PLUGIN")
         exec(zlib.decompress(b''.join(data)), {'self': self})
 
     def telnet_TTYPE(self, data):
@@ -228,14 +228,12 @@ class TelnetClientFactory(ClientFactory):
         self.protocol = None
 
     def buildProtocol(self, addr):
-        #self.protocol = TelnetTransport(TelnetClient)
-        print("using build protocol, should probably modify the underlying protocol\n could then be eadier in this code")
-        print("currently using NetStringWrapper from netstring")
-        self.protocol = NetstringWrapperProtocol(TelnetTransport, TelnetClient)
+        #self.protocol = TelnetTransport(TelnetClient) or NetstringWrapperProtocol(TelnetTransport, TelnetClient)
+        outer = NetstringWrapperProtocol(ChiffrementWrapperProtocol,TelnetTransport, TelnetClient)    
+        self.protocol = outer
         return self.protocol
 
     def write(self, data, raw=False):
-        print("using write, probably were I have to modify?")
         if raw:
             self.protocol.writeSequence(data)
         else:
@@ -259,7 +257,6 @@ class TelnetClientFactory(ClientFactory):
 factory = TelnetClientFactory()
 
 def SIGINTHandler(signum, stackframe):
-    print("using SIGINTHandler")
     """
     UNIX Signal handler. Invoked when the user hits CTRL+C.
     The program is not stopped, but a special telnet command is sent,
@@ -271,5 +268,5 @@ signal.signal(signal.SIGINT, SIGINTHandler) # register signal handler
 
 # connect to the server and run the reactor
 #reactor.connectTCP('crypta.fil.cool', 23, factory)
-reactor.connectTCP('crypta.fil.cool', 6023, factory)
+reactor.connectTCP('crypta.fil.cool', 6025, factory)
 reactor.run()

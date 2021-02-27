@@ -8,4 +8,38 @@ Résumé telnet :
 	+ chiffrement avec AES en mode compteur 
 	+ authentifié avec HMAC-SHA256 
 	=> Chacun possède donc 3 clefs, clef de l'aes, clef d'initialisation du mode compteur, clef de HMAC 
-	
+	=> Need to implement it, loo at the details (not really intersting for now)
+- Initialisation de la couche chiffrée : partage de clef symétriques. <==> Diffie-Hellman + signatures
+
+-----BEGIN X9.42 DH PARAMETERS-----
+        MIICLAKCAQEAh6jmHbS2Zjz/u9GcZRlZmYzu9ghmDdDyXSzu1ENeOwDgDfjx1hlX
+        1Pr330VhsqowFsPZETQJb6o79Cltgw6afCCeDGSXUXq9WoqdMGvPZ+2R+eZyW0dY
+        wCLgse9Cdb97bFv8EdRfkIi5QfVOseWbuLw5oL8SMH9cT9twxYGyP3a2Osrhyqa3
+        kC1SUmc1SIoO8TxtmlG/pKs62DR3llJNjvahZ7WkGCXZZ+FE5RQFZCUcysuD5rSG
+        9rPKP3lxUGAmwLhX9omWKFbe1AEKvQvmIcOjlgpU5xDDdfJjddcBQQOktUMwwZiv
+        EmEW0iduEXFfaTh3+tfvCcrbCUrpHhoVlwKCAQA/syybcxNNCy53UGZg7b1ITKex
+        jyHvIFQH9Hk6GguhJRDbwVB3vkY//0/tSqwLtVW+OmwbDGtHsbw3c79+jG9ikBIo
+        +MKMuxilWuMTQQAKZQGW+THHelfy3fRj5ensFEt3feYqqrioYorDdtKC1u04ZOZ5
+        gkKOvIMdFDSPby+Rk7UEWvJ2cWTh38lnwfs/LlWkvRv/6DucgNBSuYXRguoK2yo7
+        cxPT/hTISEseBSWIubfSu9LfAWGZ7NBuFVfNCRWzNTu7ZODsN3/QKDcN+StSx4kU
+        KM3GfrYYS1I9HbJGwy9jB4SQ8A741kfRSNR5VFFeIyfP75jFgmZLTA9sxBZZAiEA
+        jPg2QqcJoJe0R5l2QBKdopmxpH0es3ULowiw/mT1+9M=
+        -----END X9.42 DH PARAMETERS-----
+
+
+        -----BEGIN PUBLIC KEY-----
+        MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMM6kpDWtZnIQauXmCZdg90zLbQt/MLNU
+        3158zCQrRxs3MOZF+1nZN6MIM0sZvMs6z9lTbLoTZQyw4QFC6sv3Dg==
+        -----END PUBLIC KEY-----
+
+sont les paramètres nécessaires. 
+Ensuite il faut implémenter le protocole dont il est question. 
+
+=> Il faut utiliser l'espèce de protocole hybride comme indiqué dans la couche netstring. 
+
+- un hybride protocole-transport qui réalise la couche "netstrings"
+- un hybride protocole-transport qui réalise la couche "chiffrement"
+
+Or on a déjà la couche netstring! 
+Il suffit de modifier le code dans la couche netstring, rien de plus
+On va donc ajouter une surcouche dedans, qui va être implémentée de sorte à effectuer l'échange de clef DH
