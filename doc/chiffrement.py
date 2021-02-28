@@ -94,68 +94,6 @@ class ProtocolTransportMixin:
     def getPeer(self):
         return self.transport.getPeer()
 
-def AES_128_CTR_1(Kaes,Kiv,octets=32):
-	global CTR1
-	try :
-		key = Kaes.to_bytes(16, 'big')
-	except : key = Kaes
-	aes = AES(key)
-	C = b""
-	Check = ""
-	i = 0
-	cpt =0
-	P = CTR1.to_bytes(16, 'big')
-	CTR1+=1
-	while(cpt < octets):
-		if(i<16) : 
-			#C+= hex(aes.encrypt(P)[i])[2:]
-			#C += (aes.encrypt(P)[i]).to_bytes(2,'big')
-			C+=bytes(aes.encrypt(P)[i])
-			Check += "{0:02x}".format((aes.encrypt(P)[i]))
-			i+=1
-			cpt+=1
-		else : 
-			i = 0
-			P =CTR1.to_bytes(16, 'big')
-			
-			CTR1+=1
-	#print(Check)
-	return C
-
-def AES_128_CTR_2(Kaes,Kiv,octets=32):
-	global CTR2
-	try :
-		key = Kaes.to_bytes(16, 'big')
-	except : key = Kaes
-	aes = AES(key)
-	C = b""
-	Check = ""
-	i = 0
-	cpt =0
-	P = CTR2.to_bytes(16, 'big')
-	CTR2+=1
-	while(cpt < octets):
-		if(i<16) : 
-			#C+= hex(aes.encrypt(P)[i])[2:]
-			#C += (aes.encrypt(P)[i]).to_bytes(2,'big')
-			C+=bytes(aes.encrypt(P)[i])
-			Check += "{0:02x}".format((aes.encrypt(P)[i]))
-			i+=1
-			cpt+=1
-		else : 
-			i = 0
-			P =CTR2.to_bytes(16, 'big')
-			
-			CTR2+=1
-	#print(Check)
-	return C
-
-Kaes = 0x00000000000000000000000000000000
-Kiv  = 0x00000000000000000000000000000000
-Kmac = (0x00000000000000000000000000000000).to_bytes(16,'big')
-
-#print(AES_128_CTR(Kaes,Kiv))
-
 def bytes_xor(a, b) :
     return bytes(x ^ y for x, y in zip(a, b))
 def strxor (s0, s1):

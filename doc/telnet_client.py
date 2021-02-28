@@ -75,10 +75,23 @@ class TelnetClient(TelnetProtocol):
         # here is a good place to start a programmatic interaction with the server.
         
         self.transport.write(b'interphone\n')
-        self.transport.write(b'1\n')
+        self.transport.write(b'prendre downloader\n')
+        self.transport.write(b'prendre chargeur\n')
+        self.transport.write(b'prendre uploader\n')
+        self.transport.write(b'prendre badge de service\n')
+        self.transport.write(b'prendre lecteur de DIMM\n')
+        self.transport.write(b'prendre micro-SD\n')
+        self.transport.write(b'prendre azote liquide\n')
+        self.transport.write(b'prendre carte electronique suspecte\n')
         self.transport.write(b'ascenseur\n')
-        
+
+
+
+        self.transport.write(b'\n')
         self.transport.write(b'regarder note\n')
+
+        self.transport.write(b'hall\n')
+        self.transport.write(b'sortir\n')
         # self.transport.write(b'porte\n')
         # self.transport.write(b'\n')
         # self.transport.write(b'technique\n')
