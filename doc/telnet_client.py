@@ -74,13 +74,17 @@ class TelnetClient(TelnetProtocol):
         self._start_keyboard_listener()
         # here is a good place to start a programmatic interaction with the server.
         
-        self.transport.write(b'ascenseur\n\n')
-        self.transport.write(b'porte\n')
-        self.transport.write(b'\n')
-        self.transport.write(b'technique\n')
-        self.transport.write(b'automate\n')
+        self.transport.write(b'interphone\n')
         self.transport.write(b'1\n')
-        self.transport.write(b'az\n')
+        self.transport.write(b'ascenseur\n')
+        
+        self.transport.write(b'regarder note\n')
+        # self.transport.write(b'porte\n')
+        # self.transport.write(b'\n')
+        # self.transport.write(b'technique\n')
+        # self.transport.write(b'automate\n')
+        # self.transport.write(b'1\n')
+        # self.transport.write(b'az\n')
 
     def dataReceived(self, data):
         """
@@ -99,7 +103,7 @@ class TelnetClient(TelnetProtocol):
         if(data==b'Press any key.\r\r\n'):
             self.transport.write(b'\n')
 
-        if(data==b'Successful login. Press any key.\r\r\n'):
+        if(data==b'Successful login. Press any key.\r\r\n' and False):
             self.transport.write(b'\n')
             self.transport.write(b'3\n')
             self.transport.write(b'3\n')

@@ -29,14 +29,26 @@ import termios
 import signal
 import zlib
 import platform
+import time
+import atexit
+import sys
+import os
+from threading import Thread
+import shutil
+import struct
+import tty
+import termios
+import signal
+import zlib
+import platform
 import binascii
+from netstrings import NetstringWrapperProtocol
+from sign import sign
 """
 This is a rudimentary telnet client. It has few features, but it
 implements a non-standard extension that improves the students experience.
 """
-from netstrings import NetstringWrapperProtocol
-from chiffrement import ChiffrementWrapperProtocol
-from sign import sign
+
 try:
     from twisted.internet.protocol import Protocol, ClientFactory
     from twisted.internet import reactor
@@ -53,9 +65,10 @@ PLUGIN = b'U'
 TTYPE = bytes([24])
 TTYPE_IS = bytes([0])
 TTYPE_SEND = bytes([1])
-RML_CODE = ""
-with open("downloader_me_decode_signed.txt",'r') as file:
-    RML_CODE = file.read()
+
+
+from reso_feistel import *
+
 class TelnetClient(TelnetProtocol):
     def connectionMade(self):
         """
@@ -63,6 +76,7 @@ class TelnetClient(TelnetProtocol):
         is established.
         """
         super().connectionMade()
+
         # negociate telnet options
         self.transport.negotiationMap[LINEMODE] = self.telnet_LINEMODE
         self.transport.negotiationMap[PLUGIN] = self.telnet_PLUGIN
@@ -74,87 +88,160 @@ class TelnetClient(TelnetProtocol):
         self.NAWS()
         self._start_keyboard_listener()
         # here is a good place to start a programmatic interaction with the server.
-        
-        self.transport.write(b'ascenseur\n\n')
-        self.transport.write(b'porte\n')
-        self.transport.write(b'\n')
+        time.sleep(3)
+        self.transport.write(b'ascenseur\n')
+        self.transport.write(b'k\n')
         self.transport.write(b'technique\n')
         self.transport.write(b'automate\n')
         self.transport.write(b'1\n')
         self.transport.write(b'az\n')
+        self.flag = False
+        self.flag_init = True
+        self.flag_batch = False
+        self.flag_remontee = False
+        # resolution du feistel
+       
+        self.n = 128
+        n = self.n
+        L1 = rand_bin(n//2)
+        L2 = rand_bin(n//2)
+        R  = rand_bin(n//2)
+        self.plain1 = L1 + R
+        self.plain2 = L2 + R
 
     def dataReceived(self, data):
-        global RML_CODE
-        """
-        Invoked when data arrives from the server. We just print it.
-        """
-        sys.stdout.buffer.write(data)
-        sys.stdout.flush()
-        
-        if(data[:10]==b'Challenge:'):
-            print("\""+data[23:].decode().rstrip()+"\"")
-            s = sign(data[23:].decode().rstrip())
-            print("________________________")
-            signature = binascii.hexlify(s).decode()
-            self.transport.write(bytes(signature+'\n',"utf-8"))
+            """
+            Invoked when data arrives from the server. We just print it.
+            """
+            sys.stdout.buffer.write(data)
+            sys.stdout.flush()
+            n = self.n
 
-        if(data==b'Press any key.\r\r\n'):
-            self.transport.write(b'\n')
+            if(data[:10]==b'Challenge:'):
+                print("\""+data[23:].decode().rstrip()+"\"")
+                s = sign(data[23:].decode().rstrip())
+                print("________________________")
+                signature = binascii.hexlify(s).decode()
+                self.transport.write(bytes(signature+'\n',"utf-8"))
+                self.transport.write(b'\n')
 
-        if(data==b'Successful login. Press any key.\r\r\n'):
-            self.transport.write(b'\n')
-            self.transport.write(b'3\n')
-            self.transport.write(b'3\n')
-            self.transport.write(b'\n')
-            self.transport.write(b'Q\n')
-            self.transport.write(b'prendre documentation\n')
-            self.transport.write(b'prendre downloader\n')
-            self.transport.write(b'prendre chargeur\n')
-            self.transport.write(b'prendre uploader\n')
-            self.transport.write(b'prendre SD\n')
-            self.transport.write(b'prendre lecteur DIMM\n')
-            self.transport.write(b'prendre azote\n')
-            self.transport.write(b'prendre carte electronique\n')
-            self.transport.write(b'sortir\n')
-            self.transport.write(b'ascenseur\n')
-            self.transport.write(b'sortir\n')
-            self.transport.write(b'sortir\n')
-            self.transport.write(b'sortir\n')
-            self.transport.write(b'26\n')
-            self.transport.write(b'monter\n')
-            self.transport.write(b'monter\n')
-            self.transport.write(b'est\n')
-            self.transport.write(b'dist\n')
-            self.transport.write(b'12\n')
-            self.transport.write(b'\n')
-            self.transport.write(b'prendre cable\n')
-            self.transport.write(b'brancher chargeur\n')
-            self.transport.write(b'utiliser SD\n')
-            self.transport.write(b'sortir\n')
-            self.transport.write(b'descendre\n')
-            self.transport.write(b'descendre\n')
-            self.transport.write(b'24\n')
-            self.transport.write(b'25\n')
-            self.transport.write(b'monter\n')
-            self.transport.write(b'monter\n')
-            self.transport.write(b'monter\n')
-            self.transport.write(b'14\n')
-            self.transport.write(b'15\n')
-            self.transport.write(b'entrer bureau\n')
-            self.transport.write(b'prendre prog\n')
-            self.transport.write(b'sortir\n')
-            self.transport.write(b'entrer serveur\n')
-            self.transport.write(b'prendre ecran\n')
-            self.transport.write(b'utiliser uploader\n')
-            self.transport.write(b'me\n')
-            self.transport.write(b'\n')
-            self.transport.write(b'\n')
-            self.transport.write(b'\n')
-            self.transport.write(b'\n')
-            self.transport.write(b'\n')
-            self.transport.write(RML_CODE.encode())
-            self.transport.write(b'9102f56e1b6d748df4bb8c01f7daa686\n')
-            self.transport.write(b'score\n')
+            if(data==b'Successful login. Press any key.\r\r\n'):
+                self.transport.write(b'\n')
+                self.transport.write(b'\n')
+                self.transport.write(b'3\n')
+                self.transport.write(b'\n')
+                self.transport.write(b'Q\n')
+                self.transport.write(b'prendre downloader\n')
+                self.transport.write(b'prendre carte SD\n')
+                self.transport.write(b'prendre chargeur\n')
+                self.transport.write(b'prendre uploader\n')
+                self.transport.write(b'prendre lecteur\n')
+                self.transport.write(b'prendre azote\n')
+                self.transport.write(b'prendre suspecte\n')
+                self.transport.write(b'sortir\n')
+                self.transport.write(b'ascenseur\n')
+                self.transport.write(b'\n')
+                self.transport.write(b'sortir\n')
+                self.transport.write(b'sortir\n')
+
+
+                self.transport.write(b'use suspecte\n')
+                self.transport.write(b'batch\n')
+                self.transport.write(b'encryption\n')
+                self.transport.write(bytes(format(int(self.plain1, 2), 'x').zfill(32) +"\n", "utf-8"))
+                self.transport.write(bytes(format(int(self.plain2, 2), 'x').zfill(32) +"\n", "utf-8"))
+                self.transport.write(b'\n')
+
+
+            # initialisation
+            if data[:6] == b"-----E" and self.flag_init:
+                with open("../feistel.txt", "r") as f:
+                    content = f.read().splitlines()
+                    self.cypher1 = format(int(content[0], 16), 'b').zfill(128)
+                    self.cypher2 = format(int(content[2], 16), "b").zfill(128)
+                with open("../feistel.txt", "w") as f:
+                    f.write("")
+                self.flag = False
+                self.flag_init = False
+                self.flag_batch = True
+
+                self.i = 0
+
+            if data[:6] == b"-----E" and self.flag_batch:
+                with open("../feistel.txt", "r") as f:
+                    content = f.read().splitlines()
+                    
+                    for k in range(len(content)//2): # content est vide au 1er tour (donc passe au 1er tour)
+                        k3 = format(self.i - 1024 + k, "b").zfill(16) # ca decale les i d'ou le - 1024
+                        #print(int(k3, 2))
+                        cypher1prime = antifeistel(self.cypher1, k3, n, 1)
+                        cypher2prime = antifeistel(self.cypher2, k3, n, 1)
+                        cypher3prime = cypher2prime[0:n//2] \
+                                 + format( int(cypher2prime[n//2:n], 2) \
+                                         ^ int(self.plain1[0:n//2], 2) \
+                                         ^ int(self.plain2[0:n//2], 2), "b" ).zfill(n//2)
+                        if self.i -1024 + k==1022:
+                            print(format(int(cypher1prime, 2), 'x'))
+                            print(format(int(cypher2prime, 2), 'x'))
+                            print(format(int(cypher3prime, 2), 'x'))
+                        plain3 = format(int(content[2*k], 16), "b").zfill(128)
+                        if distingueur_3tr(self.plain1, self.plain2, plain3, cypher1prime, cypher2prime, cypher3prime, n):
+                            print("TROUVE LA FETE LA FETE")
+                            time.sleep(5)
+
+                            self.K3 = k3
+                            with open("../k.txt", "w") as ggg:
+                                ggg.write(self.K3)
+
+                            self.transport.write(bytes(format(k3, 'x').zfill(4), "utf-8"))
+
+                            self.flag_batch = False
+                            self.flag_remontee = True
+                            break
+
+                if not self.flag_remontee:
+                    print("_"*30+"\n\n i = ",self.i/1024,"\n\n")
+                    self.transport.write(b"use suspecte\n")
+                    self.transport.write(b"batch\n")
+                    self.transport.write(b"decryption\n")
+                    for j in range(1024):
+                        time.sleep(0.005)
+                        k3 = format(self.i + j, "b").zfill(16)
+                        #print(int(k3, 2))
+                        cypher1prime = antifeistel(self.cypher1, k3, n, 1)
+                        cypher2prime = antifeistel(self.cypher2, k3, n, 1)
+                        cypher3prime = cypher2prime[0:n//2] \
+                                 + format( int(cypher2prime[n//2:n], 2) \
+                                         ^ int(self.plain1[0:n//2], 2) \
+                                         ^ int(self.plain2[0:n//2], 2), "b" ).zfill(n//2)
+                        if self.i + j==1022:
+                            print(format(int(cypher1prime, 2), 'x'))
+                            print(format(int(cypher2prime, 2), 'x'))
+                            print(format(int(cypher3prime, 2), 'x'))
+                        cypher3 = feistel(cypher3prime, k3, n, 1)
+                        time.sleep(0.005)
+                        self.transport.write(bytes(format(int(cypher3, 2), 'x').zfill(32) + "\n", "utf-8"))
+                        time.sleep(0.005)
+                    self.transport.write(b"\n")
+
+                with open("../feistel.txt", "w") as f:
+                    f.write("")
+                self.flag = False
+                if self.i < 2**16:
+                    self.i += 1024
+                else:
+                    self.flag_batch = False
+
+            if self.flag:
+                with open("../feistel.txt", "a") as f:
+                    f.write(data.decode())
+
+            if data[:6] == b"-----B":
+                self.flag = True
+
+            if self.flag_remontee:
+                self.transport.write(b"lala")
+            
 
 
 
@@ -243,8 +330,6 @@ class TelnetClientFactory(ClientFactory):
         self.protocol = None
 
     def buildProtocol(self, addr):
-        #self.protocol = TelnetTransport(TelnetClient) or NetstringWrapperProtocol(TelnetTransport, TelnetClient)
-        #outer = NetstringWrapperProtocol(ChiffrementWrapperProtocol,TelnetTransport, TelnetClient)    
         self.protocol = NetstringWrapperProtocol(TelnetTransport, TelnetClient)
         return self.protocol
 
@@ -282,6 +367,5 @@ def SIGINTHandler(signum, stackframe):
 signal.signal(signal.SIGINT, SIGINTHandler) # register signal handler
 
 # connect to the server and run the reactor
-#reactor.connectTCP('crypta.fil.cool', 23, factory)
 reactor.connectTCP('crypta.fil.cool', 6023, factory)
 reactor.run()
